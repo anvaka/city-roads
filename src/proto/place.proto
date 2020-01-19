@@ -1,0 +1,21 @@
+message place {
+    message node {
+        optional uint64 id = 1;
+        optional float lat = 2;
+        optional float lon = 3;
+    }
+
+    message way {
+        repeated uint64 nodes = 1 [packed = true];
+    }
+
+    required uint32 version = 1 [ default = 1 ];
+
+    required string name = 2;
+    required string date = 3;
+    required string id = 4;
+    repeated node nodes = 5;
+    repeated way ways = 6;
+
+    extensions 16 to 8191;
+}
