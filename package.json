@@ -1,7 +1,7 @@
 {
-  "name": "upal",
+  "name": "city-roads",
   "version": "1.0.0",
-  "description": "A Vue.js project",
+  "description": "Visualization of all roads in a city",
   "author": "Andrei Kashcha",
   "private": true,
   "scripts": {
