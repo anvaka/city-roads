@@ -32,7 +32,7 @@ Luckily, most of the cities can be rendered without problems, resulting in a bea
 
 If you like this work and want to use it in your projects - you are more than welcome to do so!
 
-Please [let me](https://twitter.com/anvaka) know how it goes. You can also sponsor my projects [here](https://github.com/sponsors/anvaka) - your funds would be dedicated to more awesome and free data visualizations.
+Please [let me](https://twitter.com/anvaka) know how it goes. You can also sponsor my projects [here](https://github.com/sponsors/anvaka) - your funds will be dedicated to more awesome and free data visualizations.
 
 ## Local development
 
