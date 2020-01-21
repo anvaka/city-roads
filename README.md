@@ -7,10 +7,10 @@ Render every single road in any city at once: https://anvaka.github.io/city-road
 ## How it is made?
 
 The data is fetched from OpenStreetMap using [overpass-turbo API](http://overpass-turbo.eu/). While that API
-is free (as long as you follow ODbL licenses), it can be rate-limited and sometimes it slow. After all
+is free (as long as you follow ODbL licenses), it can be rate-limited and sometimes it is slow. After all
 we are downloading thousands of roads within an area!
 
-To improve the performance of download, I indexed ~3,000 cities with populating larger than 100,000 people and
+To improve the performance of download, I indexed ~3,000 cities with population larger than 100,000 people and
 stored into a [very simple](https://github.com/anvaka/index-large-cities/blob/master/proto/place.proto) protobuf format. The cities are stored into a cache in this github [repository](https://github.com/anvaka/index-large-cities).
 
 The name resolution is done by [nominatim](https://nominatim.openstreetmap.org/) - for any query that you type
