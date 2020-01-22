@@ -43,6 +43,12 @@
           </span>
         </div>
         <div v-if='isPowerMode' class='row'>
+          <a href='#'  @click.capture='toSVGFile' class='col'>As a vector (.svg)</a> 
+          <span class='col c-2'>
+            Save the current screen as a vector image (experimental feature!).
+          </span>
+        </div>
+        <div v-if='false' class='row'>
           <a href='#' @click.capture='toProtobuf' class='col'>To a .PBF file</a> 
           <span class='col c-2'>
             Save the current data as a protobuf message. For developer use only.
@@ -86,6 +92,7 @@ import createScene from './lib/createScene';
 import generateZazzleLink from './lib/getZazzleLink';
 import appState from './lib/appState';
 import protobufExport from './lib/protobufExport';
+import svgExport from './lib/svgExport';
 import './lib/canvas2BlobPolyfill';
 
 
@@ -107,7 +114,7 @@ export default {
       generatingPreview: false,
       showPrintWindow: false,
       settingsOpen: false,
-      isPowerMode: appState.get('power'),
+      isPowerMode: appState.get('svg'),
       lineColor: appState.lineColor,
       labelColor: appState.labelColor,
       backgroundColor: appState.backgroundColor,
@@ -170,6 +177,21 @@ export default {
         a.click();
         window.URL.revokeObjectURL(url);
       }, 'image/png')
+    },
+
+    toSVGFile(e) { 
+      if (!lastGrid) return;
+
+      let visibleRect = this.scene.getProjectedVisibleRect();
+
+      let svg = svgExport(lastGrid, visibleRect);
+      let blob = new Blob([svg], {type: "image/svg+xml"});
+      let url = window.URL.createObjectURL(blob);
+      let a = document.createElement("a");
+      a.href = url;
+      a.download = lastGrid.id + '.svg';
+      a.click();
+      window.URL.revokeObjectURL(url);
     },
 
     getFileName(extension) {

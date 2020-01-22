@@ -67,20 +67,19 @@ export default class Grid {
     return gridInstance;
   }
 
-  getProjectedWidth() {
+  getProjectedRect() {
     let bounds = this.bounds;
     let project = this.getProjector();
-    let leftTop = project({lon: bounds.left, lat: bounds.top});
-    let rightBottom = project({lon: bounds.right, lat: bounds.bottom});
-    return (rightBottom.x - leftTop.x);
-  }
-
-  getProjectedHeight() {
-    let bounds = this.bounds;
-    let project = this.getProjector();
-    let leftTop = project({lon: bounds.left, lat: bounds.top});
-    let rightBottom = project({lon: bounds.right, lat: bounds.bottom});
-    return (rightBottom.y - leftTop.y);
+    let leftTop = project({lon: bounds.left, lat: bounds.bottom});
+    let rightBottom = project({lon: bounds.right, lat: bounds.top});
+    let left = leftTop.x;
+    let top = leftTop.y;
+    let bottom = rightBottom.y
+    let right = rightBottom.x;
+    return {
+      left, top, right, bottom,
+      width: right - left, height: Math.abs(bottom - top)
+    }
   }
 
   forEachElement(callback) {

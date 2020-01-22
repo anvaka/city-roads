@@ -10,7 +10,8 @@ export default function createScene(grid, canvas) {
   let scene = wgl.scene(canvas);
   scene.setClearColor(0xf7/0xff, 0xf2/0xff, 0xe8/0xff, 1.0);
 
-  setInitialSizeForScene();
+  let viewBox = getInitialViewBox();
+  scene.setViewBox(viewBox);
 
   let slowDownZoom = false;
   let lines = createLinesCollection();
@@ -21,6 +22,7 @@ export default function createScene(grid, canvas) {
     render() {
       scene.renderFrame(true);
     },
+    getProjectedVisibleRect,
     dispose() {
       scene.clear();
       scene.dispose();
@@ -36,16 +38,30 @@ export default function createScene(grid, canvas) {
     }
   };
 
-  function setInitialSizeForScene() {
-    let width = grid.getProjectedWidth();
-    let height = grid.getProjectedHeight();
+  function getProjectedVisibleRect() {
+    var leftTop = scene.getSceneCoordinate(0, 0);
+    var bottomRight = scene.getSceneCoordinate(window.innerWidth, window.innerHeight);
+    let rect = {
+      left: leftTop.x,
+      top: leftTop.y,
+      right: bottomRight.x,
+      bottom: bottomRight.y
+    };
+    rect.width = rect.right - rect.left;
+    rect.height = rect.bottom - rect.top;
+
+    return rect;
+  }
+
+  function getInitialViewBox() {
+    let {width, height} = grid.getProjectedRect();
     let initialSceneSize = Math.max(width, height) / 4;
-    scene.setViewBox({
+    return {
       left:  -initialSceneSize,
       top:   -initialSceneSize,
       right:  initialSceneSize,
       bottom: initialSceneSize,
-    })
+    }
   }
 
   function createLinesCollection() {
