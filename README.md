@@ -6,7 +6,7 @@ Render every single road in any city at once: https://anvaka.github.io/city-road
 
 ## How it is made?
 
-The data is fetched from OpenStreetMap using [overpass-turbo API](http://overpass-turbo.eu/). While that API
+The data is fetched from OpenStreetMap using [overpass API](http://overpass-turbo.eu/). While that API
 is free (as long as you follow ODbL licenses), it can be rate-limited and sometimes it is slow. After all
 we are downloading thousands of roads within an area!
 
