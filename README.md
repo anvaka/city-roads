@@ -15,7 +15,7 @@ stored into a [very simple](https://github.com/anvaka/index-large-cities/blob/ma
 
 The name resolution is done by [nominatim](https://nominatim.openstreetmap.org/) - for any query that you type
 into the search box it returns list of area ids. I check for the area id in my list of cached cities first,
-and fallback to overpass-turbo if area is not present in cache.
+and fallback to overpass if area is not present in cache.
 
 ## Limitations
 
