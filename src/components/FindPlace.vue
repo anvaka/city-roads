@@ -204,7 +204,7 @@ export default {
     },
 
     useOSM(suggestion) {
-      this.loading = 'Connecting to OpenStreetMaps...'
+      this.loading = 'Connecting to OpenStreetMap...'
       
       // it may take a while to load data. 
       this.restartLoadingMonitor();
