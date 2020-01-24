@@ -42,10 +42,10 @@
             Save the current screen as a raster image.
           </span>
         </div>
-        <div v-if='isPowerMode' class='row'>
+        <div class='row'>
           <a href='#'  @click.capture='toSVGFile' class='col'>As a vector (.svg)</a> 
           <span class='col c-2'>
-            Save the current screen as a vector image (experimental feature!).
+            Save the current roads on the screen as a vector image.
           </span>
         </div>
         <div v-if='false' class='row'>
@@ -193,7 +193,11 @@ export default {
 
       let visibleRect = this.scene.getProjectedVisibleRect();
 
-      let svg = svgExport(lastGrid, visibleRect);
+      let svg = svgExport(lastGrid, visibleRect, {
+        stroke: toHex(this.lineColor),
+        background: toHex(this.backgroundColor),
+        labels: collectText()
+      });
       let blob = new Blob([svg], {type: "image/svg+xml"});
       let url = window.URL.createObjectURL(blob);
       let a = document.createElement("a");
@@ -268,7 +272,7 @@ export default {
       ctx.drawImage(cityCanvas, 0, 0, cityCanvas.width, cityCanvas.height, 0, 0, width, height);
 
       if (appState.drawLabels) {
-        Array.from(document.querySelectorAll('.printable')).forEach(label => {
+        collectText().forEach(label => {
           drawHtml(label, ctx);
         })
       }
@@ -278,6 +282,25 @@ export default {
   }
 }
 
+function collectText() {
+  return Array.from(
+    document.querySelectorAll('.printable')
+  ).map(element => {
+    let computedStyle = window.getComputedStyle(element);
+    let bounds = element.getBoundingClientRect();
+    let fontSize = Number.parseInt(computedStyle.fontSize, 10);
+
+    return {
+      text: element.innerText,
+      bounds,
+      fontSize,
+      color: computedStyle.color,
+      fontFamily: computedStyle.fontFamily,
+      fill: computedStyle.color,
+    }
+  });
+}
+
 function toRGBA(c) {
     return `rgba(${c.r}, ${c.g}, ${c.b}, ${c.a})`;
 }
@@ -285,21 +308,28 @@ function toRGBA(c) {
 function drawHtml(element, ctx) {
   if (!element) return;
 
-  let computedStyle = window.getComputedStyle(element);
-  let bounds = element.getBoundingClientRect();
   ctx.save();
-  let dpr = window.devicePixelRatio || 1;
-  let fontSize = dpr * Number.parseInt(computedStyle.fontSize, 10);
 
-  ctx.font = fontSize + 'px ' + computedStyle.fontFamily;
-  ctx.fillStyle = computedStyle.color;
+  let dpr = window.devicePixelRatio || 1;
+  ctx.font = dpr * element.fontSize + 'px ' + element.fontFamily;
+  ctx.fillStyle = element.color;
   ctx.textAlign = 'end'
-  ctx.fillText(element.innerText, bounds.right * dpr, bounds.bottom * dpr)
+  ctx.fillText(element.text, element.bounds.right * dpr, element.bounds.bottom * dpr)
   ctx.restore();
 }
 
 function getCanvas() {
   return document.querySelector('#canvas')
+}
+
+function toHex(color) {
+  return `#${hex(color.r)}${hex(color.g)}${hex(color.b)}`;
+}
+
+function hex(x) {
+  if (x === 0) return '00';
+  let hexValue = x.toString(16)
+  return x < 16 ? '0' + hexValue : hexValue;
 }
 
 function recordOpenClick(link) {

@@ -439,6 +439,7 @@ input {
     padding: 0;
     max-height: calc(100vh - 128px);
     overflow-y: auto;
+    overflow-x: hidden;
   }
 }
 
