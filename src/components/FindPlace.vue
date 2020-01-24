@@ -71,10 +71,11 @@ export default {
     LoadingIcon
   },
   data () {
-    let hasValidArea = this.getCurrentAreaId();
+    const enteredInput = appState.get('q') || '';
+    let hasValidArea = restoreStateFromQueryString();
 
     return {
-      enteredInput: appState.get('q') || '',
+      enteredInput,
       loading: null,
       lastCancel: null,
       suggestionsLoaded: false,
@@ -94,9 +95,7 @@ export default {
       this.mainActionText = FIND_TEXT;
       this.showWarning = false;
       this.hideInput = false;
-      if (appState.get('areaId')) {
-        appState.unset('areaId');
-      }
+      appState.unsetPlace();
     }
   },
   mounted() {
@@ -107,13 +106,6 @@ export default {
     clearInterval(this.notifyStillLoading);
   },
   methods: {
-    getCurrentAreaId() {
-      let areaId = appState.get('areaId');
-      if (!Number.isFinite(Number.parseInt(areaId, 10))) {
-        areaId = null;
-      }
-      return areaId;
-    },
     onSubmit() {
       queryState.set('q', this.enteredInput);
       this.cancelRequest()
@@ -122,12 +114,9 @@ export default {
       this.error = false;
       this.showWarning = false;
 
-      let areaId = this.getCurrentAreaId();
-      if (areaId) {
-        this.pickSuggestion({
-          name: this.enteredInput,
-          areaId
-        });
+      const restoredState = restoreStateFromQueryString(this.enteredInput);
+      if (restoredState) {
+        this.pickSuggestion(restoredState);
         return;
       }
 
@@ -135,15 +124,31 @@ export default {
       this.loading = 'Searching cities that match your query...'
       fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`)
         .then(x => x.json())
-        .then(x => x.filter(row => row.osm_type === 'relation').map(row => ({
-          name: row.display_name,
-          type: row.type,
-          areaId: row.osm_id + 36e8
-        })))
-        .then(data => {
+        .then(x => x.map(row => {
+          if (row.osm_type === 'relation') {
+            return {
+              name: row.display_name,
+              type: row.type,
+              areaId: row.osm_id + 36e8
+            };
+          } else if (row.boundingbox) {
+            return {
+              name: row.display_name,
+              type: row.type,
+              osm_id: row.osm_id,
+              bbox: [
+                Number.parseFloat(row.boundingbox[0]),
+                Number.parseFloat(row.boundingbox[2]),
+                Number.parseFloat(row.boundingbox[1]),
+                Number.parseFloat(row.boundingbox[3]),
+              ]
+            };
+          }
+        }).filter(x => x)
+        ).then(data => {
           this.loading = null;
           this.suggestionsLoaded = true;
-          this.data = data;
+          this.data = data; // TODO: Rename this to something less generic
           this.hideInput = data && data.length;
         });
     },
@@ -164,15 +169,19 @@ export default {
     },
 
     pickSuggestion(suggestion) {
-      this.checkCache(suggestion)
-        .catch(error => {
-          if (error.cancelled) return; // no need to do anything. They've cancelled
-
-          // No Cache - fallback
-          return this.useOSM(suggestion);
-        });
-
       this.error = false;
+      if (suggestion.areaId) {
+        this.checkCache(suggestion)
+          .catch(error => {
+            if (error.cancelled) return; // no need to do anything. They've cancelled
+
+            // No Cache - fallback
+            return this.useOSM(suggestion);
+          });
+      } else {
+        // we don't have cache for nodes yet.
+        this.useOSM(suggestion);
+      }
     },
 
     restartLoadingMonitor() {
@@ -204,12 +213,15 @@ export default {
     },
 
     useOSM(suggestion) {
+      if (suggestion.areaId && suggestion.osm_id) {
+        throw new Error('Cannot have both area id and osm id. Pick one');
+      }
       this.loading = 'Connecting to OpenStreetMap...'
       
       // it may take a while to load data. 
       this.restartLoadingMonitor();
 
-      postData(getQuery(suggestion.areaId), this.generateNewProgressToken())
+      postData(getQuery(suggestion), this.generateNewProgressToken())
         .then(osmResponse => {
           this.loading = null;
           if (osmResponse.elements.length === 0) {
@@ -219,7 +231,9 @@ export default {
 
           let grid = Grid.fromOSMResponse(osmResponse.elements)
           grid.setName(suggestion.name);
-          grid.setId(suggestion.areaId);
+          grid.setId(suggestion.areaId || suggestion.osm_id);
+          grid.setIsArea(suggestion.areaId); // osm nodes don't have area.
+          grid.setBBox(serializeBBox(suggestion.bbox));
           this.$emit('loaded', grid);
         })
         .catch(err => {
@@ -258,7 +272,9 @@ export default {
   }
 }
 
-function getQuery(areaId) {
+function getQuery(suggestion) {
+  let areaId = suggestion.areaId;
+  if (areaId) {
     return `[timeout:9000][maxsize:2000000000][out:json];
 area(${areaId});
 (._; )->.area;
@@ -267,12 +283,67 @@ way["highway"](area.area);
 node(w);
 );
 out skel;`;
+  } else {
+    let bbox = serializeBBox(suggestion.bbox);
+    return `[timeout:9000][maxsize:2000000000][out:json][bbox:${bbox}];
+(
+way["highway"];
+node(w);
+);
+out skel(${bbox});`;
+  }
+}
+
+function serializeBBox(bbox) {
+  return bbox && bbox.join(',');
 }
 
 function formatNumber(x) {
   if (!Number.isFinite(x)) return 'N/A';
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
+
+function restoreStateFromQueryString(name) {
+  let areaId = getCurrentAreaId();
+  if (areaId) {
+    return {name, areaId};
+  }
+
+  let nodeAndBox = getCurrentNodeAndBox();
+  if (nodeAndBox) {
+    return {
+      name,
+      osm_id: nodeAndBox.osm_id,
+      bbox: nodeAndBox.bbox
+    };
+  }
+}
+
+function getCurrentAreaId() {
+  let areaId = appState.get('areaId');
+  if (!Number.isFinite(Number.parseInt(areaId, 10))) {
+    areaId = null;
+  }
+  return areaId;
+}
+
+function getCurrentNodeAndBox() {
+  let osm_id = appState.get('osm_id');
+  if (!Number.isFinite(Number.parseInt(osm_id, 10))) return;
+
+  let bbox = parseBBox(appState.get('bbox'));
+  if (!bbox) return;
+
+  return { osm_id, bbox };
+}
+
+function parseBBox(bboxStr) {
+  if (!bboxStr) return null;
+
+  let bbox = bboxStr.split(',').map(x => Number.parseFloat(x)).filter(x => Number.isFinite(x));
+  return bbox.length === 4 ? bbox : null;
+}
+
 </script>
 
 <style lang="stylus">
@@ -363,9 +434,11 @@ input {
   }
 
   ul {
-    list-style-type: none
-    margin: 0
-    padding: 0
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    max-height: calc(100vh - 128px);
+    overflow-y: auto;
   }
 }
 

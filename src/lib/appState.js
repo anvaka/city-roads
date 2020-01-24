@@ -21,5 +21,11 @@ export default {
   },
   unset() {
     return queryState.unset.apply(queryState, arguments);
+  },
+
+  unsetPlace() {
+    queryState.unset('areaId');
+    queryState.unset('osm_id');
+    queryState.unset('bbox');
   }
 }

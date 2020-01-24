@@ -12,6 +12,7 @@ export default class Grid {
     this.wayPointCount = 0;
     this.id = 0;
     this.name = '';
+    this.isArea = true;
     this.projector = geoMercator();
   }
 
@@ -21,6 +22,14 @@ export default class Grid {
 
   setId(id) {
     this.id = id;
+  }
+
+  setIsArea(isArea) {
+    this.isArea = isArea;
+  }
+
+  setBBox(bboxString) {
+    this.bboxString = bboxString;
   }
 
   static fromPBF(pbf) {
