@@ -139,7 +139,15 @@ export default {
     },
 
     onGridLoaded(grid) {
-      appState.set('areaId', grid.id)
+      if (grid.isArea) {
+        appState.set('areaId', grid.id);
+        appState.unset('osm_id');
+        appState.unset('bbox');
+      } else if (grid.bboxString) {
+        appState.unset('areaId');
+        appState.set('osm_id', grid.id);
+        appState.set('bbox', grid.bboxString);
+      }
       this.placeFound = true;
       this.name = grid.name.split(',')[0];
       lastGrid = grid;
@@ -151,6 +159,7 @@ export default {
 
     startOver() {
       appState.unset('areaId');
+      appState.unsetPlace();
       appState.unset('q');
 
       this.dispose();
