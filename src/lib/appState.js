@@ -2,6 +2,10 @@ import createQueryState from 'query-state';
 
 const queryState = createQueryState({}, {useSearch: true});
 
+/**
+ * This is our base state. It just persists default information about
+ * custom settings and integrates with query string.
+ */
 export default {
   drawLabels: true,
   backgroundColor: {

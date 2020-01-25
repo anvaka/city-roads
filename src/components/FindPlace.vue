@@ -28,7 +28,7 @@
         </li>
       </ul>
     </div>
-    <div v-if='suggestionsLoaded && !data.length && !loading' class='no-results message shadow'>
+    <div v-if='suggestionsLoaded && !data.length && !loading && !error' class='no-results message shadow'>
       Didn't find matching cities. Try a different query?
     </div>
     <div v-if='noRoads' class='no-results message shadow'>
@@ -36,8 +36,12 @@
     </div>
   </div>
   <div v-if='error' class='error message shadow'>
-    <div>Something went wrong. The error was:</div>
-    <pre>{{error}}</pre>
+    <div>Sorry, we were not able to download data from the OpenStreetMap.
+    It could be very busy at the moment processing other requests. <br/><br/> Please bookmark this website and try again later?</div>
+    <div class='error-links'>
+      <a href='https://twitter.com/anvaka/status/1218971717734789120' title='see what it supposed to do' target="_blank">see how it should have worked</a>
+      <a :href='getBugReportURL(error)' :title='"report error: " + error' target='_blank'>report this bug</a>
+    </div>
   </div>
   <div v-if='loading' class='loading message shadow'>
     <loading-icon></loading-icon>
@@ -157,6 +161,17 @@ export default {
           this.data = data; // TODO: Rename this to something less generic
           this.hideInput = data && data.length;
         });
+    },
+
+    getBugReportURL(error) {
+      let title = encodeURIComponent('OSM Error');
+      let body = '';
+      if (error) {
+        body = 'Hello, an error occurred on the website:\n\n```\n' +
+          error.toString() + '\n```\n\n Can you please help?';
+      }
+
+      return `https://github.com/anvaka/city-roads/issues/new?title=${title}&body=${encodeURIComponent(body)}`
     },
 
     updateProgress(status) {
@@ -493,6 +508,11 @@ input {
   position: absolute;
   right: 4px;
   top: 4px;
+  font-size: 12px;
+}
+.error-links {
+  display: flex;
+  justify-content: space-between;
   font-size: 12px;
 }
 
