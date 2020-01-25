@@ -37,7 +37,7 @@
           </span>
         </div>
         <div class='row'>
-          <a href='#'  @click.capture='toFile' class='col'>As an image (.png)</a> 
+          <a href='#'  @click.capture='toPNGFile' class='col'>As an image (.png)</a> 
           <span class='col c-2'>
             Save the current screen as a raster image.
           </span>
@@ -175,7 +175,7 @@ export default {
       getCanvas().style.visibility = 'hidden';
     },
 
-    toFile(e) {
+    toPNGFile(e) {
       let printableCanvas = this.getPrintableCanvas();
       let fileName = this.getFileName();
       printableCanvas.toBlob(function(blob) {
@@ -200,11 +200,15 @@ export default {
       });
       let blob = new Blob([svg], {type: "image/svg+xml"});
       let url = window.URL.createObjectURL(blob);
-      let a = document.createElement("a");
-      a.href = url;
-      a.download = lastGrid.id + '.svg';
-      a.click();
-      window.URL.revokeObjectURL(url);
+      // For some reason, safari doesn't like when download happens on the same
+      // event loop cycle. Pushing it to the next one.
+      setTimeout(() => {
+        let a = document.createElement("a");
+        a.href = url;
+        a.download = lastGrid.id + '.svg';
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }, 30)
     },
 
     getFileName(extension) {
