@@ -37,7 +37,7 @@
   </div>
   <div v-if='error' class='error message shadow'>
     <div>Sorry, we were not able to download data from the OpenStreetMap.
-    It could be very busy at the moment processing other requests. <br/><br/> Please bookmark this website and try again later?</div>
+    It could be very busy at the moment processing other requests. <br/><br/> Please bookmark this website and <a href='#' @click.prevent="retry">try again</a> later?</div>
     <div class='error-links'>
       <a href='https://twitter.com/anvaka/status/1218971717734789120' title='see what it supposed to do' target="_blank">see how it should have worked</a>
       <a :href='getBugReportURL(error)' :title='"report error: " + error' target='_blank'>report this bug</a>
@@ -189,7 +189,14 @@ export default {
       }
     },
 
+    retry() {
+      if (this.lastSuggestion) {
+        pickSuggestion(this.lastSuggestion);
+      }
+    },
+
     pickSuggestion(suggestion) {
+      this.lastSuggestion = suggestion;
       this.error = false;
       if (suggestion.areaId) {
         this.checkCache(suggestion)
