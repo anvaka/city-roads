@@ -1,7 +1,9 @@
+import Progress from './Progress';
+
 export default function request(url, options) {
   if (!options) options = {};
   let req;
-  let progress = options.progress || {};
+  let progress = options.progress || new Progress();
   let isCancelled = false;
   if (progress.on) {
     progress.onCancel(cancelDownload);

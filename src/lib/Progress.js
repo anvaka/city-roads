@@ -3,7 +3,7 @@ import eventify from 'ngraph.events';
 export default class Progress {
   constructor(notify) {
     eventify(this)
-    this.callback = notify;
+    this.callback = notify || Function.prototype;
   }
 
   cancel() {

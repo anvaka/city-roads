@@ -126,8 +126,7 @@ export default {
 
       const query = encodeURIComponent(this.enteredInput);
       this.loading = 'Searching cities that match your query...'
-      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`)
-        .then(x => x.json())
+      request(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`, {responseType: 'json'})
         .then(x => x.map(row => {
           if (row.osm_type === 'relation') {
             return {
@@ -248,8 +247,9 @@ export default {
       
       // it may take a while to load data. 
       this.restartLoadingMonitor();
+      let queryString = getQuery(suggestion)
 
-      postData(getQuery(suggestion), this.generateNewProgressToken())
+      postData(queryString, this.generateNewProgressToken())
         .then(osmResponse => {
           this.loading = null;
           if (osmResponse.elements.length === 0) {
