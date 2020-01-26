@@ -45,7 +45,7 @@
         <div class='row'>
           <a href='#'  @click.capture='toSVGFile' class='col'>As a vector (.svg)</a> 
           <span class='col c-2'>
-            Save the current roads on the screen as a vector image.
+            Save the current screen as a vector image.
           </span>
         </div>
         <div v-if='false' class='row'>
