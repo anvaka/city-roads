@@ -59,7 +59,7 @@
 
 <script>
 import LoadingIcon from './LoadingIcon';
-import postData from '../lib/postData';
+import Query from '../lib/Query';
 import request from '../lib/request';
 import appState from '../lib/appState';
 import Grid from '../lib/Grid';
@@ -190,7 +190,7 @@ export default {
 
     retry() {
       if (this.lastSuggestion) {
-        pickSuggestion(this.lastSuggestion);
+        this.pickSuggestion(this.lastSuggestion);
       }
     },
 
@@ -248,36 +248,32 @@ export default {
       // it may take a while to load data. 
       this.restartLoadingMonitor();
       let queryString = getQuery(suggestion)
-
-      postData(queryString, this.generateNewProgressToken())
-        .then(osmResponse => {
-          this.loading = null;
-          if (osmResponse.elements.length === 0) {
-            this.noRoads = true;
-            return;
-          }
-
-          let grid = Grid.fromOSMResponse(osmResponse.elements)
+      const query = new Query(queryString, this.generateNewProgressToken());
+      query.run().then(grid => {
+        this.loading = null;
+        if (!grid.hasRoads()) {
+          this.noRoads = true;
+        } else {
           grid.setName(suggestion.name);
           grid.setId(suggestion.areaId || suggestion.osm_id);
           grid.setIsArea(suggestion.areaId); // osm nodes don't have area.
           grid.setBBox(serializeBBox(suggestion.bbox));
           this.$emit('loaded', grid);
-        })
-        .catch(err => {
-          if (err.cancelled) {
-            this.loading = null;
-            return;
-          }
-          console.error(err);
-          this.error = err;
+        }
+      }).catch(err => {
+        if (err.cancelled) {
           this.loading = null;
-          this.data = [];
-        })
-        .finally(() => {
-          clearInterval(this.notifyStillLoading);
-          this.stillLoading = 0;
-        });
+          return;
+        }
+        console.error(err);
+        this.error = err;
+        this.loading = null;
+        this.data = [];
+      })
+      .finally(() => {
+        clearInterval(this.notifyStillLoading);
+        this.stillLoading = 0;
+      });
     },
 
     cancelRequest() {

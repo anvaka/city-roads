@@ -32,6 +32,10 @@ export default class Grid {
     this.bboxString = bboxString;
   }
 
+  hasRoads() {
+    return this.wayPointCount > 0;
+  }
+
   static fromPBF(pbf) {
     if (pbf.version !== 1) throw new Error('Unknown version ' + pbf.version);
     let elementsOfOSMResponse = [];
