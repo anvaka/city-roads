@@ -89,10 +89,12 @@ import LoadingIcon from './components/LoadingIcon';
 import EditableLabel from './components/EditableLabel';
 import ColorPicker from './components/ColorPicker';
 import createScene from './lib/createScene';
+import GridLayer from './lib/GridLayer';
 import generateZazzleLink from './lib/getZazzleLink';
 import appState from './lib/appState';
 import protobufExport from './lib/protobufExport';
 import svgExport from './lib/svgExport';
+import config from './config';
 import './lib/canvas2BlobPolyfill';
 
 
@@ -114,10 +116,9 @@ export default {
       generatingPreview: false,
       showPrintWindow: false,
       settingsOpen: false,
-      isPowerMode: appState.get('svg'),
-      lineColor: appState.lineColor,
-      labelColor: appState.labelColor,
-      backgroundColor: appState.backgroundColor,
+      lineColor: config.getDefaultLineColor(),
+      labelColor: config.getLabelColor(),
+      backgroundColor: config.getBackgroundColor(),
     }
   },
   computed: {
@@ -154,7 +155,10 @@ export default {
       let canvas = getCanvas();
       canvas.style.visibility = 'visible';
 
-      this.scene = createScene(grid, canvas);
+      this.scene = createScene(canvas);
+      let gridLayer = new GridLayer();
+      gridLayer.setGrid(grid);
+      this.scene.add(gridLayer)
     },
 
     startOver() {
@@ -166,12 +170,11 @@ export default {
       this.placeFound = false;
       this.zazzleLink = null;
       this.showPrintWindow = false;
-      let c =  {r: 0xF7, g: 0xF2, b: 0xE8, a: 1};
-      this.backgroundColor = c;
-      this.lineColor = {r: 22, g: 22, b: 22, a: 1.0};
-      this.labelColor = {r: 22, g: 22, b: 22, a: 1.0};
+      this.backgroundColor = config.getBackgroundColor();
+      this.lineColor = config.getDefaultLineColor();
+      this.labelColor = config.getLabelColor();
 
-      document.body.style.backgroundColor = toRGBA(c);
+      document.body.style.backgroundColor = config.getBackgroundColor(/* hexString = */ true);
       getCanvas().style.visibility = 'hidden';
     },
 
