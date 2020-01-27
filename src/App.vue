@@ -133,6 +133,7 @@ export default {
     dispose() {
       if (this.scene) {
         this.scene.dispose();
+        window.scene = null;
       }
     },
     togglePrintWindow() {
@@ -156,7 +157,10 @@ export default {
       canvas.style.visibility = 'visible';
 
       this.scene = createScene(canvas);
+      window.scene = this.scene;
+
       let gridLayer = new GridLayer();
+      gridLayer.id = 'roads';
       gridLayer.setGrid(grid);
       this.scene.add(gridLayer)
     },
@@ -192,11 +196,10 @@ export default {
     },
 
     toSVGFile(e) { 
-      if (!lastGrid) return;
-
       let visibleRect = this.scene.getProjectedVisibleRect();
+      let layers = this.scene.getLayers();
 
-      let svg = svgExport(lastGrid, visibleRect, {
+      let svg = svgExport(layers, visibleRect, {
         stroke: toHex(this.lineColor),
         background: toHex(this.backgroundColor),
         labels: collectText()

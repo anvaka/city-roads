@@ -1,6 +1,7 @@
-var place = require('../proto/place.js').place;
+let tinycolor = require('tinycolor2');
+let place = require('../proto/place.js').place;
 
-module.exports = function svgExport(grid, rect, style) {
+module.exports = function svgExport(layers, rect, style) {
   let ways = [];
   let date = (new Date()).toISOString();
   let strokeWidth = 1/window.devicePixelRatio;
@@ -20,15 +21,19 @@ Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright
    <rect id="background" fill="${style.background}" x="${rect.left}" y="${rect.top}" width="${rect.width}" height="${rect.height}"></rect>
 `
   ]
-  addPaths();
+  layers.forEach(layer => addPaths(layer));
   addText();
 
   svgDoc.push(`</svg>`)
 
   return svgDoc.join('\n');
 
-  function addPaths() {
-    svgDoc.push(`<g id="paths" fill="none" stroke="${style.stroke}" stroke-width="${strokeWidth}">`)
+  function addPaths(gridLayer) {
+    let grid = gridLayer.grid;
+    if (!grid) return;
+
+    let lineColor = tinycolor(gridLayer.getLineColor()).toHexString();
+    svgDoc.push(`<g id="${gridLayer.id}" fill="none" stroke="${lineColor}" stroke-width="${strokeWidth}">`)
     let positions = grid.nodes;
     let project = grid.getProjector();
     grid.forEachElement(x => {

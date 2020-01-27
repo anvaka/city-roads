@@ -1,4 +1,5 @@
 import request from './request';
+import Progress from './Progress';
 
 let backends = [
   'https://overpass.kumi.systems/api/interpreter',
@@ -7,6 +8,7 @@ let backends = [
 ]
 
 export default function postData(data, progress) {
+  progress = progress || new Progress();
   const postData = {
     method: 'POST',
     responseType: 'json',

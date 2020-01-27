@@ -20,6 +20,15 @@ export default function createScene(canvas) {
       scene.renderFrame(true);
     },
 
+    clear() {
+      layers.forEach(layer => layer.destroy());
+      scene.clear();
+    },
+
+    getLayers() {
+      return layers;
+    },
+
     dispose() {
       scene.clear();
       scene.dispose();
@@ -30,7 +39,6 @@ export default function createScene(canvas) {
       layers.forEach(layer => {
         layer.setLineColor(color);
       });
-      scene.renderFrame();
     },
 
     setBackground(color) {
@@ -39,9 +47,7 @@ export default function createScene(canvas) {
     },
 
     add(gridLayer) {
-      let lines = gridLayer.getLinesCollection();
-      scene.appendChild(lines);
-
+      gridLayer.bindToScene(scene);
       layers.push(gridLayer);
 
       if (layers.length === 1) {
