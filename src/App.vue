@@ -37,19 +37,19 @@
           </span>
         </div>
         <div class='row'>
-          <a href='#'  @click.capture='toPNGFile' class='col'>As an image (.png)</a> 
+          <a href='#'  @click.prevent='toPNGFile' class='col'>As an image (.png)</a> 
           <span class='col c-2'>
             Save the current screen as a raster image.
           </span>
         </div>
         <div class='row'>
-          <a href='#'  @click.capture='toSVGFile' class='col'>As a vector (.svg)</a> 
+          <a href='#'  @click.prevent='toSVGFile' class='col'>As a vector (.svg)</a> 
           <span class='col c-2'>
             Save the current screen as a vector image.
           </span>
         </div>
         <div v-if='false' class='row'>
-          <a href='#' @click.capture='toProtobuf' class='col'>To a .PBF file</a> 
+          <a href='#' @click.prevent='toProtobuf' class='col'>To a .PBF file</a> 
           <span class='col c-2'>
             Save the current data as a protobuf message. For developer use only.
           </span>
