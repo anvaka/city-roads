@@ -249,12 +249,6 @@ export default {
     },
 
     zazzleMugPrint() {
-      if (this.zazzleLink) {
-        window.open(this.zazzleLink, '_blank');
-        recordOpenClick(this.zazzleLink);
-        return;
-      }
-
       let printableCanvas = this.getPrintableCanvas();
 
       this.generatingPreview = true;
