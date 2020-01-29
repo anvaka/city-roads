@@ -299,19 +299,19 @@ export default {
 function getQuery(suggestion) {
   let areaId = suggestion.areaId;
   if (areaId) {
-    return `[timeout:9000][maxsize:2000000000][out:json];
+    return `[timeout:900][maxsize:1073741824][out:json];
 area(${areaId});
 (._; )->.area;
 (
-way["highway"](area.area);
+way[highway](area.area);
 node(w);
 );
 out skel;`;
   } else {
     let bbox = serializeBBox(suggestion.bbox);
-    return `[timeout:9000][maxsize:2000000000][out:json][bbox:${bbox}];
+    return `[timeout:900][out:json][bbox:${bbox}];
 (
-way["highway"];
+way[highway];
 node(w);
 );
 out skel(${bbox});`;
