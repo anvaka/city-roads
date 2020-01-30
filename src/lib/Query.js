@@ -8,7 +8,7 @@ export default class Query {
     let template = `[timeout:9000][maxsize:2000000000][out:json];
 area({{geocodeArea:${placeName}}});
 (._; )->.area;
-(way[${wayFilter}](area.area); node(w););
+(${wayFilter}(area.area); node(w););
 out skel;`;
     return new Query(template);
   }

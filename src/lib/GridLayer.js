@@ -1,27 +1,27 @@
 import config from '../config';
 import tinycolor from 'tinycolor2';
-import Query from './Query';
 
 const wgl = require('w-gl');
 let counter = 0;
 
 export default class GridLayer {
-  static fromQuery(query) {
-    let layer = new GridLayer();
+  get color() {
+    return this._color;
+  }
 
-    if (typeof query === 'string') {
-      query = Query.all.apply(Query, arguments);
+  set color(unsafeColor) {
+    let color = tinycolor(unsafeColor);
+    this._color = color;
+    if (this.lines) {
+      this.lines.color = toRatioColor(color.toRgb());
     }
-
-    query.run().then(grid => {
-      layer.setGrid(grid);
-    });
-
-    return layer;
+    if (this.scene) {
+      this.scene.renderFrame();
+    }
   }
 
   constructor() {
-    this.color = config.getDefaultLineColor();
+    this._color = config.getDefaultLineColor();
     this.grid = null;
     this.lines = null;
     this.scene = null;
@@ -39,21 +39,6 @@ export default class GridLayer {
     }
   }
 
-  setLineColor(unsafeColor) {
-    let color = tinycolor(unsafeColor);
-    this.color = color;
-    if (this.lines) {
-      this.lines.color = toRatioColor(color.toRgb());
-    }
-    if (this.scene) {
-      this.scene.renderFrame();
-    }
-  }
-
-  getLineColor() {
-    return this.color;
-  }
-
   getViewBox() {
     if (!this.grid) return null;
 
@@ -67,10 +52,16 @@ export default class GridLayer {
     };
   }
 
-  setTransform(dx, dy, scale = 1) {
-    this.dx = dx;
-    this.dy = dy;
-    this.scale = scale;
+  moveTo(x, y = 0) {
+    this.dx = x;
+    this.dy = y;
+
+    this._transferTransform();
+  }
+
+  moveBy(dx, dy = 0) {
+    this.dx += dx;
+    this.dy += dy;
 
     this._transferTransform();
   }
@@ -99,7 +90,7 @@ export default class GridLayer {
       });
     }
 
-    let color = tinycolor(this.color).toRgb();
+    let color = tinycolor(this._color).toRgb();
     lines.color = toRatioColor(color);
 
     this.lines = lines;

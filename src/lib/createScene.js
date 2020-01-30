@@ -37,7 +37,7 @@ export default function createScene(canvas) {
 
     setLineColor(color) {
       layers.forEach(layer => {
-        layer.setLineColor(color);
+        layer.color = color;
       });
     },
 
@@ -47,6 +47,8 @@ export default function createScene(canvas) {
     },
 
     add(gridLayer) {
+      if (layers.indexOf(gridLayer) > -1) return; // O(n).
+
       gridLayer.bindToScene(scene);
       layers.push(gridLayer);
 

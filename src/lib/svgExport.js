@@ -32,7 +32,7 @@ Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright
     let grid = gridLayer.grid;
     if (!grid) return;
 
-    let lineColor = tinycolor(gridLayer.getLineColor()).toHexString();
+    let lineColor = tinycolor(gridLayer.color).toHexString();
     svgDoc.push(`<g id="${gridLayer.id}" fill="none" stroke="${lineColor}" stroke-width="${strokeWidth}">`)
     let positions = grid.nodes;
     let project = grid.getProjector();

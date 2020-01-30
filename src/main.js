@@ -3,16 +3,14 @@
 import Vue from 'vue'
 import App from './App'
 import NoWebGL from './NoWebGL'
-import GridLayer from './lib/GridLayer';
-import Query from './lib/Query';
+import load from './lib/load';
 
 const wgl = require('w-gl');
 
 Vue.config.productionTip = false
 
 // expose the console API
-window.GridLayer = GridLayer;
-window.Query = Query;
+window.load = load;
 
 if (wgl.isWebGLEnabled(document.querySelector('#canvas'))) {
   /* eslint-disable no-new */
