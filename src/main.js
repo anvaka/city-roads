@@ -7,6 +7,8 @@ import load from './lib/load';
 
 const wgl = require('w-gl');
 
+window.addEventListener('error', logError);
+
 Vue.config.productionTip = false
 
 // expose the console API
@@ -25,4 +27,15 @@ if (wgl.isWebGLEnabled(document.querySelector('#canvas'))) {
     components: { NoWebGL },
     template: '<NoWebGL/>'
   })
+}
+
+function logError(e) {
+  if (typeof ga !== 'function') return;
+
+  const exDescription = e ? `${e.message} in ${e.filename}:${e.lineno}` : 'Unknown exception';
+
+  ga('send', 'exception', {
+    exDescription,
+    exFatal: false
+  });
 }
