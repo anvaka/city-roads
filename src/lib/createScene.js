@@ -1,4 +1,4 @@
-
+import bus from './bus';
 /**
  * This file is responsible for rendering of the grid. It uses my silly 2d webgl
  * renderer which is not very well documented, neither popular, yet it is very
@@ -8,6 +8,8 @@ const wgl = require('w-gl');
 
 export default function createScene(canvas) {
   let scene = wgl.scene(canvas);
+  scene.on('transform', triggerTransform);
+
   scene.setClearColor(0xf7/0xff, 0xf2/0xff, 0xe8/0xff, 1.0);
 
   let slowDownZoom = false;
@@ -61,6 +63,10 @@ export default function createScene(canvas) {
 
     getProjectedVisibleRect
   };
+
+  function triggerTransform() {
+    bus.$emit('scene-transform');
+  }
 
   function getProjectedVisibleRect() {
     var leftTop = scene.getSceneCoordinate(0, 0);

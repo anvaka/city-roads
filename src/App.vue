@@ -36,12 +36,23 @@
             Print what you see onto a mug. <br/>Get a unique gift of your favorite city.
           </span>
         </div>
+        <div class='preview-actions message' v-if='zazzleLink || generatingPreview'>
+            <div v-if='zazzleLink' class='padded popup-help'>
+              If your browser has blocked the new window, <br/>please <a :href='zazzleLink' target='_blank'>click here</a>
+              to open it.
+            </div>
+            <div v-if='generatingPreview' class='loading-container'>
+              <loading-icon></loading-icon>
+              Generating preview url...
+            </div>
+        </div>
         <div class='row'>
           <a href='#'  @click.prevent='toPNGFile' class='col'>As an image (.png)</a> 
           <span class='col c-2'>
             Save the current screen as a raster image.
           </span>
         </div>
+        
         <div class='row'>
           <a href='#'  @click.prevent='toSVGFile' class='col'>As a vector (.svg)</a> 
           <span class='col c-2'>
@@ -66,16 +77,6 @@
           </p>
         </div>
       </div>
-      <div class='preview-actions message' v-if='zazzleLink || generatingPreview'>
-          <div v-if='zazzleLink' class='padded popup-help'>
-            If your browser has blocked the new window, <br/>please <a :href='zazzleLink' target='_blank'>click here</a>
-            to open it.
-          </div>
-          <div v-if='generatingPreview' class='loading-container'>
-            <loading-icon></loading-icon>
-            Generating preview url...
-          </div>
-      </div>
       <editable-label v-model='name' class='city-name' :printable='true' :style='{color: labelColorRGBA}'></editable-label>
       <div class='license printable' :style='{color: labelColorRGBA}'>data <a href='https://www.openstreetmap.org/about/' target="_blank" :style='{color: labelColorRGBA}'>© OpenStreetMap</a></div>
     </div>
@@ -96,7 +97,7 @@ import protobufExport from './lib/protobufExport';
 import svgExport from './lib/svgExport';
 import config from './config';
 import './lib/canvas2BlobPolyfill';
-
+import bus from './lib/bus';
 
 let lastGrid;
 
@@ -126,8 +127,13 @@ export default {
       return toRGBA(this.labelColor);
     }
   },
+  created() {
+    bus.$on('scene-transform', this.handleSceneTransform);
+  },
+  
   beforeDestroy() {
     this.dispose();
+    bus.$off('scene-transform', this.handleSceneTransform);
   },
   methods: {
     dispose() {
@@ -139,7 +145,9 @@ export default {
     togglePrintWindow() {
       this.showPrintWindow = !this.showPrintWindow;
     },
-
+    handleSceneTransform() {
+      this.zazzleLink = null;
+    },
     onGridLoaded(grid) {
       if (grid.isArea) {
         appState.set('areaId', grid.id);
@@ -237,15 +245,18 @@ export default {
 
     updateLinesColor() {
       this.scene.setLineColor(this.lineColor);
+      this.zazzleLink = null;
     },
 
     updateBackground() {
       this.setBackgroundColor(this.backgroundColor)
+      this.zazzleLink = null;
     },
 
     setBackgroundColor(c) {
       this.scene.setBackground(c);
       document.body.style.backgroundColor = toRGBA(c);
+      this.zazzleLink = null;
     },
 
     zazzleMugPrint() {
@@ -464,12 +475,13 @@ a:focus {
   background: #F5F5F5;
 }
 
-
 .preview-actions {
   display: flex;
-  padding: 8px;
+  padding: 8px 0;
+  margin-left: -8px;
+  margin-bottom: 14px;
+  margin-top: 1px;
   width: desktop-controls-width;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   flex-direction: column;
   align-items: stretch;
   font-size: 14px;
