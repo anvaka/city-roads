@@ -1,6 +1,6 @@
 <template>
-<div class='find-place' :class='{centered: !suggestionsLoaded }'>
-  <div v-if='!suggestionsLoaded'>
+<div class='find-place' :class='{centered: boxInTheMiddle }'>
+  <div v-if='boxInTheMiddle'>
     <h3 class='site-header'>city roads</h3>
     <p class='description'>This website renders every single road within a city</p>
   </div>
@@ -83,6 +83,7 @@ export default {
       loading: null,
       lastCancel: null,
       suggestionsLoaded: false,
+      boxInTheMiddle: true,
       stillLoading: 0,
       error: null,
       hideInput: false,
@@ -156,9 +157,19 @@ export default {
         }).filter(x => x)
         ).then(data => {
           this.loading = null;
-          this.suggestionsLoaded = true;
-          this.data = data; // TODO: Rename this to something less generic
           this.hideInput = data && data.length;
+          if (this.boxInTheMiddle) {
+            // let animation that moves input box proceed a bit
+            this.boxInTheMiddle = false; // This triggers transition
+            // wait for it and then set the suggestions:
+            setTimeout(() => {
+              this.suggestionsLoaded = true;
+              this.data = data; // TODO: Rename this to something less generic
+            }, 50)
+          } else {
+              this.suggestionsLoaded = true;
+              this.data = data; // TODO: Rename this to something less generic
+          }
         });
     },
 
@@ -490,7 +501,7 @@ input {
   transform: translateX(-50%) translateY(0);
   transition-timing-function: ease-out;
   transition-property: top left transform;
-  transition-duration: 0.3s;
+  transition-duration: 0.2s;
 }
 
 .find-place.centered {
