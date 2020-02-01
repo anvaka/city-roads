@@ -4,6 +4,7 @@ import Vue from 'vue'
 import App from './App'
 import NoWebGL from './NoWebGL'
 import load from './lib/load';
+import {require as d3Require} from 'd3-require';
 
 const wgl = require('w-gl');
 
@@ -13,6 +14,7 @@ Vue.config.productionTip = false
 
 // expose the console API
 window.load = load;
+window.require = d3Require;
 
 if (wgl.isWebGLEnabled(document.querySelector('#canvas'))) {
   /* eslint-disable no-new */

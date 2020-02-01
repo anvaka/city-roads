@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "d3-geo": "^1.11.9",
+    "d3-require": "^1.2.4",
     "ngraph.events": "^1.2.1",
     "ngraph.graph": "^19.0.1",
     "pbf": "^3.2.1",
