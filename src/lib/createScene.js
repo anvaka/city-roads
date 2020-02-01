@@ -1,4 +1,7 @@
 import bus from './bus';
+import GridLayer from './GridLayer';
+import Query from './Query';
+
 /**
  * This file is responsible for rendering of the grid. It uses my silly 2d webgl
  * renderer which is not very well documented, neither popular, yet it is very
@@ -48,21 +51,45 @@ export default function createScene(canvas) {
       scene.renderFrame();
     },
 
-    add(gridLayer) {
-      if (layers.indexOf(gridLayer) > -1) return; // O(n).
+    add,
 
-      gridLayer.bindToScene(scene);
-      layers.push(gridLayer);
-
-      if (layers.length === 1) {
-        // TODO: Should I do this for other layers?
-        let viewBox = gridLayer.getViewBox();
-        scene.setViewBox(viewBox);
-      }
-    },
+    load,
 
     getProjectedVisibleRect
   };
+
+  /**
+   * Experimental API. Can be changed/removed at any point.
+   */
+  function load(queryFilter, place) {
+    let layer = new GridLayer();
+    layer.query = Query.all(queryFilter, place);
+    layer.query.run().then(grid => {
+      layer.setGrid(grid);
+    }).catch(e => {
+      console.error(`Could not execute:
+  ${queryFilter}
+  The error was:`);
+      console.error(e);
+      layer.destroy();
+    });
+  
+    add(layer);
+    return layer;
+  }
+
+  function add(gridLayer) {
+    if (layers.indexOf(gridLayer) > -1) return; // O(n).
+
+    gridLayer.bindToScene(scene);
+    layers.push(gridLayer);
+
+    if (layers.length === 1) {
+      // TODO: Should I do this for other layers?
+      let viewBox = gridLayer.getViewBox();
+      scene.setViewBox(viewBox);
+    }
+  }
 
   function triggerTransform() {
     bus.$emit('scene-transform');
