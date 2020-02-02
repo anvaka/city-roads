@@ -12,7 +12,7 @@ window.addEventListener('error', logError);
 Vue.config.productionTip = false
 
 // expose the console API
-window.require = d3Require;
+window.requireModule = d3Require;
 
 if (wgl.isWebGLEnabled(document.querySelector('#canvas'))) {
   /* eslint-disable no-new */
