@@ -8,6 +8,12 @@ const queryState = createQueryState({}, {useSearch: true});
  */
 export default {
   drawLabels: true,
+  isCacheEnabled() {
+    return queryState.get('cache') != 0;
+  },
+  enableCache() {
+    return queryState.unset('cache');
+  },
   get() {
     return queryState.get.apply(queryState, arguments);
   },

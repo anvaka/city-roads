@@ -208,7 +208,7 @@ export default {
     pickSuggestion(suggestion) {
       this.lastSuggestion = suggestion;
       this.error = false;
-      if (suggestion.areaId) {
+      if (appState.isCacheEnabled() && suggestion.areaId) {
         this.checkCache(suggestion)
           .catch(error => {
             if (error.cancelled) return; // no need to do anything. They've cancelled

@@ -177,6 +177,7 @@ export default {
       appState.unset('areaId');
       appState.unsetPlace();
       appState.unset('q');
+      appState.enableCache();
 
       this.dispose();
       this.placeFound = false;
