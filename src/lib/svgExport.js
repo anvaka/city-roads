@@ -1,7 +1,7 @@
 let tinycolor = require('tinycolor2');
 let place = require('../proto/place.js').place;
 
-module.exports = function svgExport(layers, rect, style) {
+module.exports = function svgExport(layers, visibleRect, style) {
   let ways = [];
   let date = (new Date()).toISOString();
   let strokeWidth = 1/window.devicePixelRatio;
@@ -12,13 +12,13 @@ Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright
 -->
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-   viewBox="${rect.left} ${rect.top} ${rect.width} ${rect.height}">
+   viewBox="${visibleRect.left} ${visibleRect.top} ${visibleRect.width} ${visibleRect.height}">
    <style>
    path {
     vector-effect: non-scaling-stroke;
    }
    </style>
-   <rect id="background" fill="${style.background}" x="${rect.left}" y="${rect.top}" width="${rect.width}" height="${rect.height}"></rect>
+   <rect id="background" fill="${style.background}" x="${visibleRect.left}" y="${visibleRect.top}" width="${visibleRect.width}" height="${visibleRect.height}"></rect>
 `
   ]
   layers.forEach(layer => addPaths(layer));
@@ -32,6 +32,9 @@ Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright
     let grid = gridLayer.grid;
     if (!grid) return;
 
+    // NOTE: This will not work when we add rotations to the transform
+    let {scale, dx, dy} = gridLayer;
+
     let lineColor = tinycolor(gridLayer.color).toHexString();
     svgDoc.push(`<g id="${gridLayer.id}" fill="none" stroke="${lineColor}" stroke-width="${strokeWidth}">`)
     let positions = grid.nodes;
@@ -43,8 +46,8 @@ Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright
       let prev = null;
       let hasLine = false;
       let points = x.nodes.map(node => {
-        let pt = project(positions.get(node));
-        if (isOutside(pt, rect)) {
+        let pt = globalProject(positions.get(node));
+        if (isOutside(pt, visibleRect)) {
           prev = null;
           return;
         }
@@ -62,11 +65,19 @@ Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright
       }
     });
     svgDoc.push(`</g>`)
+
+    function globalProject(pt) {
+      let localPoint = project(pt);
+      localPoint.x = localPoint.x * scale + dx;
+      localPoint.y = localPoint.y * scale + dy;
+
+      return localPoint;
+    }
   }
 
   function addText() {
-    let scaleX = window.innerWidth / rect.width;
-    let scaleY = window.innerHeight / rect.height;
+    let scaleX = window.innerWidth / visibleRect.width;
+    let scaleY = window.innerHeight / visibleRect.height;
     style.labels.map(label => {
       if (!label.text) return;
       let insecurelyEscaped = label.text
@@ -76,9 +87,9 @@ Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright
       
       // Note: this is not 100% accurate, might need to be fixed eventually
       let bounds = label.bounds;
-      let leftOffset = rect.width * bounds.right / window.innerWidth + rect.left;
-      let bottomOffset = rect.height * bounds.bottom / window.innerHeight + rect.top;
-      let upScale = rect.height * label.fontSize / window.innerHeight;
+      let leftOffset = visibleRect.width * bounds.right / window.innerWidth + visibleRect.left;
+      let bottomOffset = visibleRect.height * bounds.bottom / window.innerHeight + visibleRect.top;
+      let upScale = visibleRect.height * label.fontSize / window.innerHeight;
 
       let fontFamily = label.fontFamily.replace(/"/g, '\'');
       return `<text text-anchor="end" x="${leftOffset}" y="${bottomOffset}" fill="${label.color}" font-family="${fontFamily}" font-size="${upScale}">${insecurelyEscaped}</text>`
@@ -89,7 +100,7 @@ Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright
   }
 }
 
-function isOutside(point, rect) {
-  return point.x < rect.left || point.x > rect.right ||
-         point.y < rect.top || point.y > rect.bottom;
+function isOutside(point, visibleRect) {
+  return point.x < visibleRect.left || point.x > visibleRect.right ||
+         point.y < visibleRect.top || point.y > visibleRect.bottom;
 }

@@ -168,7 +168,7 @@ export default {
       window.scene = this.scene;
 
       let gridLayer = new GridLayer();
-      gridLayer.id = 'roads';
+      gridLayer.id = 'main';
       gridLayer.setGrid(grid);
       this.scene.add(gridLayer)
     },
@@ -206,7 +206,7 @@ export default {
 
     toSVGFile(e) { 
       let visibleRect = this.scene.getProjectedVisibleRect();
-      let layers = this.scene.getLayers();
+      let layers = this.scene.getAll();
 
       let svg = svgExport(layers, visibleRect, {
         stroke: toHex(this.lineColor),

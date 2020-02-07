@@ -21,31 +21,49 @@ export default function createScene(canvas) {
   listenToEvents();
 
   return {
+    /**
+     * Requests the scene to perform immediate re-render
+     */
     render() {
       scene.renderFrame(true);
     },
 
+    /**
+     * Removes all layers in the scene
+     */
     clear() {
       layers.forEach(layer => layer.destroy());
       scene.clear();
     },
 
-    getLayers() {
+    /**
+     * Returns all layers in the scene.
+     */
+    getAll() {
       return layers;
     },
 
+    /**
+     * Destroys the scene, cleans up all resources.
+     */
     dispose() {
       scene.clear();
       scene.dispose();
       unsubscribeFromEvents();
     },
 
+    /**
+     * This is likely to be deprecated soon
+     */
     setLineColor(color) {
       layers.forEach(layer => {
         layer.color = color;
       });
     },
 
+    /**
+     * Sets the background color of the scene
+     */
     setBackground(color) {
       scene.setClearColor(color.r/0xff, color.g/0xff, color.b/0xff, color.a);
       scene.renderFrame();
