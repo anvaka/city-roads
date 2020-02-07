@@ -12,13 +12,13 @@
     Note: Large cities may require 200MB+ of data transfer and may need a powerful device to render.
   </div>
   <div class='results' v-if='!loading'>
-    <div v-if='suggestionsLoaded && data.length' class='suggestions shadow'>
+    <div v-if='suggestionsLoaded && suggestions.length' class='suggestions shadow'>
       <div class='prompt message'>
         <div>Select boundaries below to download all roads within</div>
         <div class='note'>large cities may require 200MB+ of data transfer and a powerful device</div>
       </div>
       <ul>
-        <li v-for='(suggestion, index) in data' :key="index">
+        <li v-for='(suggestion, index) in suggestions' :key="index">
           <a @click.prevent='pickSuggestion(suggestion)' class='suggestion'
           href='#'>
           <span>
@@ -28,7 +28,7 @@
         </li>
       </ul>
     </div>
-    <div v-if='suggestionsLoaded && !data.length && !loading && !error' class='no-results message shadow'>
+    <div v-if='suggestionsLoaded && !suggestions.length && !loading && !error' class='no-results message shadow'>
       Didn't find matching cities. Try a different query?
     </div>
     <div v-if='noRoads' class='no-results message shadow'>
@@ -91,7 +91,7 @@ export default {
       clicked: false,
       showWarning: hasValidArea, 
       mainActionText: hasValidArea ? 'Download Area' : FIND_TEXT,
-      data: []
+      suggestions: []
     }
   },
   watch: {
@@ -114,7 +114,7 @@ export default {
     onSubmit() {
       queryState.set('q', this.enteredInput);
       this.cancelRequest()
-      this.data = [];
+      this.suggestions = [];
       this.noRoads = false;
       this.error = false;
       this.showWarning = false;
@@ -155,20 +155,20 @@ export default {
             };
           }
         }).filter(x => x)
-        ).then(data => {
+        ).then(suggestions => {
           this.loading = null;
-          this.hideInput = data && data.length;
+          this.hideInput = suggestions && suggestions.length;
           if (this.boxInTheMiddle) {
             // let animation that moves input box proceed a bit
             this.boxInTheMiddle = false; // This triggers transition
             // wait for it and then set the suggestions:
             setTimeout(() => {
               this.suggestionsLoaded = true;
-              this.data = data; // TODO: Rename this to something less generic
+              this.suggestions = suggestions;
             }, 50)
           } else {
               this.suggestionsLoaded = true;
-              this.data = data; // TODO: Rename this to something less generic
+              this.suggestions = suggestions; 
           }
         });
     },
@@ -279,7 +279,7 @@ export default {
         console.error(err);
         this.error = err;
         this.loading = null;
-        this.data = [];
+        this.suggestions = [];
       })
       .finally(() => {
         clearInterval(this.notifyStillLoading);
