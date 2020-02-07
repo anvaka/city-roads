@@ -3,14 +3,35 @@ import Grid from './Grid';
 import request from './request';
 
 export default class Query {
+  /**
+   * Every possible way
+   */
+  static All = 'way';
 
-  static all(wayFilter, placeName) {
+  /**
+   * Every single building
+   */
+  static Building = 'way[building]';
+  /**
+   * This gets anything marked as a highway, which has its own pros and cons.
+   * See https://github.com/anvaka/city-roads/issues/20
+   */
+  static Road = 'way[highway]';
+
+  /**
+   * More accurate representation of the roads by @RicoElectrico.
+   */
+  static RoadStrict = 'way[highway~"^(((motorway|trunk|primary|secondary|tertiary)(_link)?)|unclassified|residential|living_street|pedestrian|service|track)$"][area!=yes]';
+
+  static all(wayFilter, placeName, options) {
     let template = `[timeout:9000][maxsize:2000000000][out:json];
 area({{geocodeArea:${placeName}}});
 (._; )->.area;
 (${wayFilter}(area.area); node(w););
 out skel;`;
-    return new Query(template);
+    const q = new Query(template);
+    q.options = options;
+    return q;
   }
 
   constructor(queryString, progress) {
@@ -27,7 +48,7 @@ out skel;`;
     this.promise = runAllNominmantimQueries(parts)
       .then(resolvedQueryString => postData(resolvedQueryString, this.progress))
       .then(osmResponse => {
-        let grid = Grid.fromOSMResponse(osmResponse.elements)
+        let grid = Grid.fromOSMResponse(osmResponse.elements, this.options)
         return grid;
       });
 

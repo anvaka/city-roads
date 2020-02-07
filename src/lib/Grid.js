@@ -5,7 +5,7 @@ import {geoMercator} from 'd3-geo';
  * All roads in the area
  */
 export default class Grid {
-  constructor() {
+  constructor(options) {
     this.elements = [];
     this.bounds = new BoundingBox();
     this.nodes = new Map();
@@ -13,7 +13,7 @@ export default class Grid {
     this.id = 0;
     this.name = '';
     this.isArea = true;
-    this.projector = geoMercator();
+    this.projector = (options && options.projector) || geoMercator();
   }
 
   setName(name) {
@@ -54,8 +54,8 @@ export default class Grid {
     return grid;
   }
 
-  static fromOSMResponse(elementsOfOSMResponse) {
-    let gridInstance = new Grid();
+  static fromOSMResponse(elementsOfOSMResponse, options) {
+    let gridInstance = new Grid(options);
 
     let nodes = gridInstance.nodes;
     let bounds = gridInstance.bounds;
@@ -72,9 +72,12 @@ export default class Grid {
     });
 
     gridInstance.elements = elementsOfOSMResponse;
-    gridInstance.projector
-      .center([bounds.cx, bounds.cy])
-      .scale(6371393); // Radius of Earth
+
+    if (!options || !options.projector) {
+      gridInstance.projector
+        .center([bounds.cx, bounds.cy])
+        .scale(6371393); // Radius of Earth
+    }
 
     gridInstance.wayPointCount = wayPointCount;
     return gridInstance;

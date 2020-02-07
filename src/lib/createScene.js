@@ -61,9 +61,19 @@ export default function createScene(canvas) {
   /**
    * Experimental API. Can be changed/removed at any point.
    */
-  function load(queryFilter, place) {
+  function load(queryFilter, place, options) {
+    options = options || {};
+
     let layer = new GridLayer();
-    layer.query = Query.all(queryFilter, place);
+    let projector = options.projector
+    if (typeof projector === 'number') {
+      let projectorLayer = layers[options.projector];
+      if (projectorLayer) {
+        projector = projectorLayer.grid.projector;
+      }
+    }
+
+    layer.query = Query.all(queryFilter, place, {projector});
     layer.query.run().then(grid => {
       layer.setGrid(grid);
     }).catch(e => {
