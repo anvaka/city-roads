@@ -33,14 +33,30 @@ export default function createScene(canvas) {
      */
     clear() {
       layers.forEach(layer => layer.destroy());
+      layers = [];
       scene.clear();
     },
 
     /**
      * Returns all layers in the scene.
      */
-    getAll() {
-      return layers;
+    queryLayerAll,
+
+    queryLayer(filter) {
+      let result = queryLayerAll(filter);
+      if (result) return result[0];
+    },
+    
+    getRenderer() {
+      return scene;
+    },
+
+    getWGL() {
+      return wgl;
+    },
+
+    version() {
+      return '0.0.1'; // here be dragons
     },
 
     /**
@@ -83,6 +99,7 @@ export default function createScene(canvas) {
     options = options || {};
 
     let layer = new GridLayer();
+    layer.id = place;
     let projector = options.projector
     if (typeof projector === 'number') {
       let projectorLayer = layers[options.projector];
@@ -104,6 +121,14 @@ export default function createScene(canvas) {
   
     add(layer);
     return layer;
+  }
+
+  function queryLayerAll(filter) {
+    if (!filter) return layers;
+
+    return layers.filter(layer => {
+      return layer.id === filter;
+    });
   }
 
   function add(gridLayer) {

@@ -206,7 +206,7 @@ export default {
 
     toSVGFile(e) { 
       let visibleRect = this.scene.getProjectedVisibleRect();
-      let layers = this.scene.getAll();
+      let layers = this.scene.queryLayerAll();
 
       let svg = svgExport(layers, visibleRect, {
         stroke: toHex(this.lineColor),
