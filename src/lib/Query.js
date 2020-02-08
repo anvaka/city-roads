@@ -23,15 +23,9 @@ export default class Query {
    */
   static RoadStrict = 'way[highway~"^(((motorway|trunk|primary|secondary|tertiary)(_link)?)|unclassified|residential|living_street|pedestrian|service|track)$"][area!=yes]';
 
-  static all(wayFilter, placeName, options) {
-    let template = `[timeout:9000][maxsize:2000000000][out:json];
-area({{geocodeArea:${placeName}}});
-(._; )->.area;
-(${wayFilter}(area.area); node(w););
-out skel;`;
-    const q = new Query(template);
-    q.options = options;
-    return q;
+  static all(loadOptions) {
+    let template = loadOptions.getQueryTemplate();
+    return new Query(template);
   }
 
   constructor(queryString, progress) {
@@ -48,8 +42,7 @@ out skel;`;
     this.promise = runAllNominmantimQueries(parts)
       .then(resolvedQueryString => postData(resolvedQueryString, this.progress))
       .then(osmResponse => {
-        let grid = Grid.fromOSMResponse(osmResponse.elements, this.options)
-        return grid;
+        return Grid.fromOSMResponse(osmResponse.elements)
       });
 
     return this.promise;

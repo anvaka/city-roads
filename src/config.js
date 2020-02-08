@@ -8,7 +8,7 @@ export default {
   // areaServer: 'http://localhost:8085/', // This is un-commented when I develop cache locally
 
   getDefaultLineColor() {
-    return tinycolor('rgba(26, 26, 26, 0.8)').toRgb();
+    return tinycolor('rgba(26, 26, 26, 0.8)').toRgb(); // TODO: I think this should not convert to rgb
   },
   getLabelColor() {
     return tinycolor('#161616').toRgb();

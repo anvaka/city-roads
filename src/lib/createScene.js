@@ -1,6 +1,7 @@
 import bus from './bus';
 import GridLayer from './GridLayer';
 import Query from './Query';
+import LoadOptions from './LoadOptions.js';
 
 /**
  * This file is responsible for rendering of the grid. It uses my silly 2d webgl
@@ -15,12 +16,15 @@ export default function createScene(canvas) {
 
   scene.setClearColor(0xf7/0xff, 0xf2/0xff, 0xe8/0xff, 1.0);
 
+  let gl = scene.getGL();
+  gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
   let slowDownZoom = false;
   let layers = [];
 
   listenToEvents();
 
-  return {
+  let sceneAPI = {
     /**
      * Requests the scene to perform immediate re-render
      */
@@ -92,24 +96,20 @@ export default function createScene(canvas) {
     getProjectedVisibleRect
   };
 
+  return sceneAPI; // Public bit is over. Below are just implementation details.
+
   /**
    * Experimental API. Can be changed/removed at any point.
    */
-  function load(queryFilter, place, options) {
-    options = options || {};
+  function load(queryFilter, rawOptions) {
+    let options = LoadOptions.parse(sceneAPI, queryFilter, rawOptions);
 
     let layer = new GridLayer();
-    layer.id = place;
-    let projector = options.projector
-    if (typeof projector === 'number') {
-      let projectorLayer = layers[options.projector];
-      if (projectorLayer) {
-        projector = projectorLayer.grid.projector;
-      }
-    }
+    layer.id = options.place;
+    layer.query = Query.all(options);
 
-    layer.query = Query.all(queryFilter, place, {projector});
     layer.query.run().then(grid => {
+      grid.setProjector(options.projector);
       layer.setGrid(grid);
     }).catch(e => {
       console.error(`Could not execute:

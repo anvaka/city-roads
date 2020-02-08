@@ -21,7 +21,7 @@ export default class GridLayer {
   }
 
   constructor() {
-    this._color = config.getDefaultLineColor();
+    this._color = tinycolor(config.getDefaultLineColor());
     this.grid = null;
     this.lines = null;
     this.scene = null;
@@ -30,6 +30,12 @@ export default class GridLayer {
     this.scale = 1;
     this.id = 'paths_' + counter;
     counter += 1;
+  }
+
+  getGridProjector() {
+    if (this.grid) {
+      return this.grid.projector;
+    }
   }
 
   setGrid(grid) {
@@ -100,6 +106,8 @@ export default class GridLayer {
   destroy() {
     if (!this.scene || !this.lines) return;
 
+    // TODO: This should remove the grid layer too. Need to clean up how
+    // scene interacts with grid layers.
     this.scene.removeChild(this.lines);
   }
 

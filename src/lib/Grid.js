@@ -5,7 +5,7 @@ import {geoMercator} from 'd3-geo';
  * All roads in the area
  */
 export default class Grid {
-  constructor(options) {
+  constructor() {
     this.elements = [];
     this.bounds = new BoundingBox();
     this.nodes = new Map();
@@ -13,7 +13,7 @@ export default class Grid {
     this.id = 0;
     this.name = '';
     this.isArea = true;
-    this.projector = (options && options.projector) || geoMercator();
+    this.projector = undefined; 
   }
 
   setName(name) {
@@ -36,6 +36,10 @@ export default class Grid {
     return this.wayPointCount > 0;
   }
 
+  setProjector(newProjector) {
+    this.projector = newProjector;
+  }
+
   static fromPBF(pbf) {
     if (pbf.version !== 1) throw new Error('Unknown version ' + pbf.version);
     let elementsOfOSMResponse = [];
@@ -54,8 +58,8 @@ export default class Grid {
     return grid;
   }
 
-  static fromOSMResponse(elementsOfOSMResponse, options) {
-    let gridInstance = new Grid(options);
+  static fromOSMResponse(elementsOfOSMResponse) {
+    let gridInstance = new Grid();
 
     let nodes = gridInstance.nodes;
     let bounds = gridInstance.bounds;
@@ -72,13 +76,6 @@ export default class Grid {
     });
 
     gridInstance.elements = elementsOfOSMResponse;
-
-    if (!options || !options.projector) {
-      gridInstance.projector
-        .center([bounds.cx, bounds.cy])
-        .scale(6371393); // Radius of Earth
-    }
-
     gridInstance.wayPointCount = wayPointCount;
     return gridInstance;
   }
@@ -109,10 +106,15 @@ export default class Grid {
       if (element.type !== 'way') return;
 
       let nodeIds = element.nodes;
-      let last = project(positions.get(nodeIds[0]));
+      let node = positions.get(nodeIds[0])
+      if (!node) return;
+
+      let last = project(node);
 
       for (let index = 1; index < nodeIds.length; ++index) {
-        let next = project(positions.get(nodeIds[index]));
+        node = positions.get(nodeIds[index])
+        if (!node) continue;
+        let next = project(node);
 
         callback(last, next);
 
@@ -123,6 +125,14 @@ export default class Grid {
 
   getProjector() {
     let q = [0, 0]; // reuse to avoid GC.
+
+    if (!this.projector) {
+      this.projector = geoMercator();
+      this.projector
+        .center([this.bounds.cx, this.bounds.cy])
+        .scale(6371393); // Radius of Earth
+    }
+
     let projector = this.projector;
 
     return project;
