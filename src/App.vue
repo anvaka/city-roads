@@ -117,9 +117,9 @@ export default {
       generatingPreview: false,
       showPrintWindow: false,
       settingsOpen: false,
-      lineColor: config.getDefaultLineColor(),
-      labelColor: config.getLabelColor(),
-      backgroundColor: config.getBackgroundColor(),
+      lineColor: config.getDefaultLineColor().toRgb(),
+      labelColor: config.getLabelColor().toRgb(),
+      backgroundColor: config.getBackgroundColor().toRgb(),
     }
   },
   computed: {
@@ -129,11 +129,15 @@ export default {
   },
   created() {
     bus.$on('scene-transform', this.handleSceneTransform);
+    bus.$on('background-color', this.syncBackground);
+    bus.$on('line-color', this.syncLineColor);
   },
   
   beforeDestroy() {
     this.dispose();
     bus.$off('scene-transform', this.handleSceneTransform);
+    bus.$off('background-color', this.syncBackground);
+    bus.$off('line-color', this.syncLineColor);
   },
   methods: {
     dispose() {
@@ -183,11 +187,11 @@ export default {
       this.placeFound = false;
       this.zazzleLink = null;
       this.showPrintWindow = false;
-      this.backgroundColor = config.getBackgroundColor();
-      this.lineColor = config.getDefaultLineColor();
-      this.labelColor = config.getLabelColor();
+      this.backgroundColor = scene.background.toRgb();
+      this.lineColor = config.getDefaultLineColor().toRgb();
+      this.labelColor = config.getLabelColor().toRgb();
 
-      document.body.style.backgroundColor = config.getBackgroundColor(/* hexString = */ true);
+      document.body.style.backgroundColor = scene.background.toRgbString();
       getCanvas().style.visibility = 'hidden';
     },
 
@@ -205,12 +209,11 @@ export default {
     },
 
     toSVGFile(e) { 
-      let visibleRect = this.scene.getProjectedVisibleRect();
-      let layers = this.scene.queryLayerAll();
+      let visibleRect = scene.getProjectedVisibleRect();
+      let layers = scene.queryLayerAll();
 
       let svg = svgExport(layers, visibleRect, {
-        stroke: toHex(this.lineColor),
-        background: toHex(this.backgroundColor),
+        background: scene.background.toRgbString(),
         labels: collectText()
       });
       let blob = new Blob([svg], {type: "image/svg+xml"});
@@ -245,17 +248,24 @@ export default {
     },
 
     updateLinesColor() {
-      this.scene.setLineColor(this.lineColor);
+      this.scene.lineColor = this.lineColor;
       this.zazzleLink = null;
     },
 
+    syncLineColor(newColor) {
+      this.lineColor = newColor.toRgb();
+    },
+
+    syncBackground(newBackground) {
+      this.backgroundColor = newBackground.toRgb();
+    },
+    // TODO: I need two background methods?
     updateBackground() {
       this.setBackgroundColor(this.backgroundColor)
       this.zazzleLink = null;
     },
-
     setBackgroundColor(c) {
-      this.scene.setBackground(c);
+      this.scene.background = c;
       document.body.style.backgroundColor = toRGBA(c);
       this.zazzleLink = null;
     },
@@ -342,16 +352,6 @@ function drawHtml(element, ctx) {
 
 function getCanvas() {
   return document.querySelector('#canvas')
-}
-
-function toHex(color) {
-  return `#${hex(color.r)}${hex(color.g)}${hex(color.b)}`;
-}
-
-function hex(x) {
-  if (x === 0) return '00';
-  let hexValue = x.toString(16)
-  return x < 16 ? '0' + hexValue : hexValue;
 }
 
 function recordOpenClick(link) {

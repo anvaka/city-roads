@@ -21,7 +21,7 @@ export default class GridLayer {
   }
 
   constructor() {
-    this._color = tinycolor(config.getDefaultLineColor());
+    this._color = config.getDefaultLineColor();
     this.grid = null;
     this.lines = null;
     this.scene = null;

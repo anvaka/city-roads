@@ -2,6 +2,8 @@ import bus from './bus';
 import GridLayer from './GridLayer';
 import Query from './Query';
 import LoadOptions from './LoadOptions.js';
+import config from '../config';
+import tinycolor from 'tinycolor2';
 
 /**
  * This file is responsible for rendering of the grid. It uses my silly 2d webgl
@@ -21,6 +23,7 @@ export default function createScene(canvas) {
 
   let slowDownZoom = false;
   let layers = [];
+  let backgroundColor = config.getBackgroundColor();
 
   listenToEvents();
 
@@ -46,10 +49,11 @@ export default function createScene(canvas) {
      */
     queryLayerAll,
 
-    queryLayer(filter) {
-      let result = queryLayerAll(filter);
-      if (result) return result[0];
-    },
+    /**
+     * Same as `queryLayerAll(filter)` but returns the first found
+     * match. If no matches found - returns undefined.
+     */
+    queryLayer,
     
     getRenderer() {
       return scene;
@@ -73,20 +77,33 @@ export default function createScene(canvas) {
     },
 
     /**
-     * This is likely to be deprecated soon
+     * Uniformly sets color to all loaded grid layer.
      */
-    setLineColor(color) {
+    set lineColor(color) {
       layers.forEach(layer => {
         layer.color = color;
       });
+      bus.$emit('line-color', tinycolor(color));
+    },
+
+    get lineColor() {
+      let firstLayer = queryLayer();
+      return (firstLayer && firstLayer.color) || config.getDefaultLineColor();
     },
 
     /**
      * Sets the background color of the scene
      */
-    setBackground(color) {
-      scene.setClearColor(color.r/0xff, color.g/0xff, color.b/0xff, color.a);
+    set background(rawColor) {
+      backgroundColor = tinycolor(rawColor);
+      let c = backgroundColor.toRgb();
+      scene.setClearColor(c.r/0xff, c.g/0xff, c.b/0xff, c.a);
       scene.renderFrame();
+      bus.$emit('background-color', backgroundColor);
+    },
+
+    get background() {
+      return backgroundColor;
     },
 
     add,
@@ -129,6 +146,11 @@ export default function createScene(canvas) {
     return layers.filter(layer => {
       return layer.id === filter;
     });
+  }
+
+  function queryLayer(filter) {
+    let result = queryLayerAll(filter);
+    if (result) return result[0];
   }
 
   function add(gridLayer) {
