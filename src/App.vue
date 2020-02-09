@@ -187,11 +187,11 @@ export default {
       this.placeFound = false;
       this.zazzleLink = null;
       this.showPrintWindow = false;
-      this.backgroundColor = scene.background.toRgb();
+      this.backgroundColor = config.getBackgroundColor().toRgb();
       this.lineColor = config.getDefaultLineColor().toRgb();
       this.labelColor = config.getLabelColor().toRgb();
 
-      document.body.style.backgroundColor = scene.background.toRgbString();
+      document.body.style.backgroundColor = config.getBackgroundColor().toRgbString();
       getCanvas().style.visibility = 'hidden';
     },
 
@@ -213,7 +213,7 @@ export default {
       let layers = scene.queryLayerAll();
 
       let svg = svgExport(layers, visibleRect, {
-        background: scene.background.toRgbString(),
+        background: scene.background.toHexString(),
         labels: collectText()
       });
       let blob = new Blob([svg], {type: "image/svg+xml"});
