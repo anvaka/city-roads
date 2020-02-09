@@ -123,9 +123,9 @@ export default function createScene(canvas) {
 
     let layer = new GridLayer();
     layer.id = options.place;
-    layer.query = Query.all(options);
 
-    layer.query.run().then(grid => {
+    // TODO: Cancellation logic?
+    Query.runFromOptions(options).then(grid => {
       grid.setProjector(options.projector);
       layer.setGrid(grid);
     }).catch(e => {

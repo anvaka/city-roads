@@ -61,11 +61,13 @@
 import LoadingIcon from './LoadingIcon';
 import Query from '../lib/Query';
 import request from '../lib/request';
+import findBoundaryByName from '../lib/findBoundaryByName';
 import appState from '../lib/appState';
 import Grid from '../lib/Grid';
 import queryState from '../lib/appState';
 import config from '../config';
 import Progress from '../lib/Progress'
+import LoadOptions from '../lib/LoadOptions';
 
 const FIND_TEXT = 'Find City Bounds';
 
@@ -127,35 +129,8 @@ export default {
 
       const query = encodeURIComponent(this.enteredInput);
       this.loading = 'Searching cities that match your query...'
-      request(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`, {responseType: 'json'})
-        .then(x => x.map(row => {
-          if (row.osm_type === 'relation') {
-            return {
-              name: row.display_name,
-              type: row.type,
-              // By convention the area id can be calculated from an existing 
-              // OSM way by adding 2400000000 to its OSM id, or in case of a 
-              // relation by adding 3600000000 respectively. So we are adding this
-              // https://wiki.openstreetmap.org/wiki/Overpass_API/Overpass_QL#By_area_.28area.29
-              // Note: we may want to do another case for osm_type = 'way'. Need to check
-              // if it returns correct values.
-              areaId: row.osm_id + 36e8
-            };
-          } else if (row.boundingbox) {
-            return {
-              name: row.display_name,
-              type: row.type,
-              osm_id: row.osm_id,
-              bbox: [
-                Number.parseFloat(row.boundingbox[0]),
-                Number.parseFloat(row.boundingbox[2]),
-                Number.parseFloat(row.boundingbox[1]),
-                Number.parseFloat(row.boundingbox[3]),
-              ]
-            };
-          }
-        }).filter(x => x)
-        ).then(suggestions => {
+      findBoundaryByName(this.enteredInput)
+        .then(suggestions => {
           this.loading = null;
           this.hideInput = suggestions && suggestions.length;
           if (this.boxInTheMiddle) {
@@ -251,16 +226,16 @@ export default {
     },
 
     useOSM(suggestion) {
-      if (suggestion.areaId && suggestion.osm_id) {
-        throw new Error('Cannot have both area id and osm id. Pick one');
-      }
       this.loading = 'Connecting to OpenStreetMap...'
       
       // it may take a while to load data. 
       this.restartLoadingMonitor();
-      let queryString = getQuery(suggestion)
-      const query = new Query(queryString, this.generateNewProgressToken());
-      query.run().then(grid => {
+      Query.runFromOptions(new LoadOptions({
+        wayFilter: Query.Road,
+        areaId: suggestion.areaId,
+        bbox: suggestion.bbox
+      }), this.generateNewProgressToken())
+      .then(grid => {
         this.loading = null;
         if (!grid.hasRoads()) {
           this.noRoads = true;
@@ -304,28 +279,6 @@ export default {
       this.progressToken = new Progress(this.updateProgress);
       return this.progressToken;
     }
-  }
-}
-
-function getQuery(suggestion) {
-  let areaId = suggestion.areaId;
-  if (areaId) {
-    return `[timeout:900][maxsize:1073741824][out:json];
-area(${areaId});
-(._; )->.area;
-(
-way[highway](area.area);
-node(w);
-);
-out skel;`;
-  } else {
-    let bbox = serializeBBox(suggestion.bbox);
-    return `[timeout:900][out:json][bbox:${bbox}];
-(
-way[highway];
-node(w);
-);
-out skel(${bbox});`;
   }
 }
 

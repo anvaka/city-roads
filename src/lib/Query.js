@@ -1,6 +1,6 @@
 import postData from './postData';
 import Grid from './Grid';
-import request from './request';
+import findBoundaryByName from './findBoundaryByName';
 
 export default class Query {
   /**
@@ -23,13 +23,16 @@ export default class Query {
    */
   static RoadStrict = 'way[highway~"^(((motorway|trunk|primary|secondary|tertiary)(_link)?)|unclassified|residential|living_street|pedestrian|service|track)$"][area!=yes]';
 
-  static all(loadOptions) {
-    let template = loadOptions.getQueryTemplate();
-    return new Query(template);
+  static runFromOptions(loadOptions, progress) {
+    return loadOptions.getQueryTemplate().then(boundedQuery => {
+      let q = new Query(boundedQuery, progress);
+      return q.run();
+    });
   }
 
-  constructor(queryString, progress) {
-    this.queryString = queryString;
+  constructor(boundedQuery, progress) {
+    this.queryBounds = boundedQuery.bounds;
+    this.queryString = boundedQuery.queryString;
     this.progress = progress;
     this.promise = null;
   }
@@ -39,10 +42,13 @@ export default class Query {
       return this.promise;
     }
     let parts = collectAllNominatimQueries(this.queryString);
+
     this.promise = runAllNominmantimQueries(parts)
       .then(resolvedQueryString => postData(resolvedQueryString, this.progress))
       .then(osmResponse => {
-        return Grid.fromOSMResponse(osmResponse.elements)
+        let grid = Grid.fromOSMResponse(osmResponse.elements)
+        grid.queryBounds = this.queryBounds;
+        return grid;
       });
 
     return this.promise;
@@ -68,10 +74,8 @@ function runAllNominmantimQueries(parts) {
     if (typeof part === 'string') return processNext();
 
     if (part.type === 'area') {
-      let name = encodeURIComponent(part.name);
-      return request(`https://nominatim.openstreetmap.org/search?format=json&q=${name}`, {responseType: 'json'})
-        .then(extractAreas)
-        .then(pickFirstArea)
+      return findBoundayByName(part.name)
+        .then(pickFirstBoundary)
         .then(first => {
           if (!first) {
             throw new Error('No areas found for request ' + part.name);
@@ -86,30 +90,9 @@ function runAllNominmantimQueries(parts) {
   }
 }
 
-function extractAreas(x) {
-  let areas = x.filter(row => row.osm_type === 'relation' || row.osm_type === 'way')
-    .map(row => {
-      // TODO: this duplicates FindPlace code. Refactor.
-      let areaId;
-      if (row.osm_type === 'relation') {
-        areaId = row.osm_id + 36e8;
-      } else if (row.osm_type === 'way') {
-        areaId = row.osm_id + 24e8;
-      }
-
-      return {
-        areaId,
-        name: row.display_name,
-        type: row.type,
-      };
-    });
-
-  return areas;
-}
-
-function pickFirstArea(areas) {
-  if (areas.length > 0) {
-    return areas[0];
+function pickFirstBoundary(boundaries) {
+  if (boundaries.length > 0) {
+    return boundaries[0];
   }
 }
 

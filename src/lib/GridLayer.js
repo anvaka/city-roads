@@ -33,9 +33,11 @@ export default class GridLayer {
   }
 
   getGridProjector() {
-    if (this.grid) {
-      return this.grid.projector;
-    }
+    if (this.grid) return this.grid.projector;
+  }
+
+  getQueryBounds() {
+    if (this.grid) return this.grid.queryBounds;
   }
 
   setGrid(grid) {

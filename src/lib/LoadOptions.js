@@ -1,3 +1,5 @@
+import findBoundaryByName from "./findBoundaryByName";
+
 /**
  * For console API we allow a lot of flexibility to fetch data
  * This component normalizes input arguments and turns them into unified
@@ -22,6 +24,13 @@ export default class LoadOptions {
     let protoLayer = getProtoLayer(scene, rawOptions.layer);
     if (protoLayer) {
       result.projector = protoLayer.getGridProjector();
+      let protoQueryBounds = protoLayer.getQueryBounds();
+      if (protoQueryBounds && !result.place && !result.areaId && !result.bbox) {
+        // use bounds of the parent layer unless we have our own override.
+        result.place = protoQueryBounds.place;
+        result.areaId = protoQueryBounds.areaId;
+        result.bbox = protoQueryBounds.bbox;
+      }
     }
 
     if (rawOptions.projector) {
@@ -32,7 +41,7 @@ export default class LoadOptions {
     return result;
   }
 
-  constructor() {
+  constructor(overrides) {
     /**
     * Query that should be translated to area id by nominatim;
     */
@@ -43,9 +52,10 @@ export default class LoadOptions {
     */
     this.projector = undefined;
     this.wayFilter = undefined;
-    this.timeout = 9000;
-    this.maxHeapByteSize = 2000000000;
+    this.timeout = 900;
+    this.maxHeapByteSize = 1073741824;
     this.outputMethod = 'skel'; // body
+    Object.assign(this, overrides);
   }
 
   getQueryTemplate() {
@@ -58,11 +68,41 @@ export default class LoadOptions {
       throw new Error('Way filter is required');
     }
 
-    return `[timeout:${this.timeout}][maxsize:${this.maxHeapByteSize}][out:json];
-area({{geocodeArea:${this.place}}});
+    return this.getBounds()
+      .then(bounds => {
+        let queryString;
+        if (bounds.areaId) {
+          queryString = `[timeout:${this.timeout}][maxsize:${this.maxHeapByteSize}][out:json];
+area(${bounds.areaId});
 (._; )->.area;
 (${this.wayFilter}(area.area); node(w););
 out ${this.outputMethod};`;
+        } else if (bounds.bbox) {
+          let bbox = serializeBBox(bounds.bbox);
+          queryString = `[timeout:${this.timeout}][maxsize:${this.maxHeapByteSize}][bbox:${bbox}][out:json];
+(${this.wayFilter}; node(w););
+out ${this.outputMethod};`;
+        }
+
+        return {
+          bounds,
+          queryString
+        }
+      });
+  }
+
+  getBounds() {
+    if (this.place) {
+      return findBoundaryByName(this.place).then(x => x && x[0]);
+    }
+    if (this.areaId) {
+      return Promise.resolve({ areaId: this.areaId });
+    }
+    if (this.bbox) {
+      return Promise.resolve({ bbox: this.bbox });
+    }
+
+    throw new Error('Please specify bounding area for the query (place|areaId|bbox)');
   }
 }
 
@@ -78,4 +118,8 @@ function getProtoLayer(scene, layerDefinition) {
     // We assume it is a layer instance:
     return layerDefinition;
   }
+}
+
+function serializeBBox(bbox) {
+  return bbox && bbox.join(',');
 }
