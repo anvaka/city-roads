@@ -61,7 +61,16 @@ function runAllNominmantimQueries(parts) {
   return processNext().then(concat);
 
   function concat() {
-    return parts.map(part => typeof part === 'string' ? part : part.areaId).join('');
+    return parts.map(part => {
+      if (typeof part === 'string') {
+        return part;
+      } 
+      if (part.geoType === 'Area') return `area(${part.areaId})`;
+      if (part.geoType === 'Coords') return part.lat + ',' + part.lon;
+      if (part.geoType === 'Id') return `${part.osmType}(${part.osmId})`;
+      if (part.geoType === 'Bbox') return part.bbox.join(',');
+ 
+    }).join('');
   }
   
   function processNext() {
@@ -73,20 +82,16 @@ function runAllNominmantimQueries(parts) {
     lastProcessed += 1;
     if (typeof part === 'string') return processNext();
 
-    if (part.type === 'area') {
-      return findBoundayByName(part.name)
-        .then(pickFirstBoundary)
-        .then(first => {
-          if (!first) {
-            throw new Error('No areas found for request ' + part.name);
-          }
-          Object.assign(part, first);
-        })
-        .then(wait(1000)) // per nominatim agreement we are not allowed to issue more tan 1 request per second
-        .then(processNext);
-    }
-
-    throw new Error('Unknown part: ' + part);
+    return findBoundaryByName(part.name)
+      .then(pickFirstBoundary)
+      .then(first => {
+        if (!first) {
+          throw new Error('No areas found for request ' + part.name);
+        }
+        Object.assign(part, first);
+      })
+      .then(wait(1000)) // per nominatim agreement we are not allowed to issue more tan 1 request per second
+      .then(processNext);
   }
 }
 
@@ -97,15 +102,15 @@ function pickFirstBoundary(boundaries) {
 }
 
 function collectAllNominatimQueries(extendedQuery) {
-  let area = /{{geocodeArea:(.+?)}}/;
+  let geoTest = /{{geocode(.+?):(.+?)}}/;
   let match;
   let parts = [];
   let lastIndex = 0;
-  while ((match = extendedQuery.match(area))) {
+  while ((match = extendedQuery.match(geoTest))) {
     parts.push(extendedQuery.substr(0, match.index));
     parts.push({
-      type: 'area',
-      name: match[1]
+      geoType: match[1],
+      name: match[2]
     });
     extendedQuery = extendedQuery.substr(match.index + match[0].length)
   }
