@@ -1,9 +1,18 @@
 import request from './request';
 
+let cachedResults = new Map();
+
 export default function findBoundaryByName(inputName) {
+  let results = cachedResults.get(inputName);
+  if (results) return Promise.resolve(results);
+
   let name = encodeURIComponent(inputName);
   return request(`https://nominatim.openstreetmap.org/search?format=json&q=${name}`, {responseType: 'json'})
-      .then(extractBoundaries);
+      .then(extractBoundaries)
+      .then(x => {
+        cachedResults.set(inputName, x);
+        return x;
+      });
 }
 
 function extractBoundaries(x) {
@@ -32,7 +41,10 @@ function extractBoundaries(x) {
       return {
         areaId,
         bbox,
+        lat: row.lat,
+        lon: row.lon,
         osmId: row.osm_id,
+        osmType: row.osm_type,
         name: row.display_name,
         type: row.type,
       };
