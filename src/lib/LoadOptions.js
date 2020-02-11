@@ -61,7 +61,9 @@ export default class LoadOptions {
   getQueryTemplate() {
     if (this.raw) {
       // I assume you know what you are doing.
-      return this.raw;
+      return Promise.resolve({
+        queryString: this.raw
+      });
     }
 
     if (!this.wayFilter) {
