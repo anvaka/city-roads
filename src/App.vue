@@ -231,9 +231,7 @@ export default {
     },
 
     getFileName(extension) {
-      let prefix = this.name || '';
-      let dateStamp = new Date().toISOString();
-      let fileName = escapeFileName(prefix || dateStamp);
+      let fileName = escapeFileName(this.name || new Date().toISOString());
       return fileName + (extension || '');
     },
 
