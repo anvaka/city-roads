@@ -162,7 +162,9 @@ export default function createScene(canvas) {
     if (layers.length === 1) {
       // TODO: Should I do this for other layers?
       let viewBox = gridLayer.getViewBox();
-      scene.setViewBox(viewBox);
+      if (viewBox) {
+        scene.setViewBox(viewBox);
+      }
     }
   }
 
