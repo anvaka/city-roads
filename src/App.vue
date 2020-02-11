@@ -197,12 +197,12 @@ export default {
 
     toPNGFile(e) {
       let printableCanvas = this.getPrintableCanvas();
-      let fileName = this.getFileName();
+      let fileName = this.getFileName('.png');
       printableCanvas.toBlob(function(blob) {
         let url = window.URL.createObjectURL(blob);
         let a = document.createElement("a");
         a.href = url;
-        a.download = fileName + '.png';
+        a.download = fileName;
         a.click();
         window.URL.revokeObjectURL(url);
       }, 'image/png')
@@ -218,19 +218,22 @@ export default {
       });
       let blob = new Blob([svg], {type: "image/svg+xml"});
       let url = window.URL.createObjectURL(blob);
+      let fileName = this.getFileName('.svg');
       // For some reason, safari doesn't like when download happens on the same
       // event loop cycle. Pushing it to the next one.
       setTimeout(() => {
         let a = document.createElement("a");
         a.href = url;
-        a.download = lastGrid.id + '.svg';
+        a.download = fileName;
         a.click();
         window.URL.revokeObjectURL(url);
       }, 30)
     },
 
     getFileName(extension) {
-      let fileName = ((new Date().toISOString())).replace(/[\s\W]/g, '_');
+      let prefix = this.name || '';
+      let dateStamp = new Date().toISOString();
+      let fileName = escapeFileName(prefix || dateStamp);
       return fileName + (extension || '');
     },
 
@@ -331,6 +334,12 @@ function collectText() {
       fill: computedStyle.color,
     }
   });
+}
+
+function escapeFileName(str) {
+  if (!str) return '';
+
+  return str.replace(/[#%&{}\\/?*><$!'":@+`|=]/g, '_');
 }
 
 function toRGBA(c) {
