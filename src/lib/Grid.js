@@ -99,7 +99,7 @@ export default class Grid {
     this.elements.forEach(callback);
   }
 
-  forEachWay(callback) {
+  forEachWay(callback, enter, exit) {
     let positions = this.nodes;
     let project = this.getProjector();
     this.elements.forEach(element => {
@@ -110,6 +110,7 @@ export default class Grid {
       if (!node) return;
 
       let last = project(node);
+      if (enter) enter(element);
 
       for (let index = 1; index < nodeIds.length; ++index) {
         node = positions.get(nodeIds[index])
@@ -120,6 +121,7 @@ export default class Grid {
 
         last = next;
       }
+      if (exit) exit(element);
     });
   }
 
