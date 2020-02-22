@@ -209,13 +209,7 @@ export default {
     },
 
     toSVGFile(e) { 
-      let visibleRect = scene.getProjectedVisibleRect();
-      let layers = scene.queryLayerAll();
-
-      let svg = svgExport(layers, visibleRect, {
-        background: scene.background.toHexString(),
-        labels: collectText()
-      });
+      let svg = svgExport(scene, { labels: collectText() });
       let blob = new Blob([svg], {type: "image/svg+xml"});
       let url = window.URL.createObjectURL(blob);
       let fileName = this.getFileName('.svg');

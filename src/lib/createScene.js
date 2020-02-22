@@ -17,6 +17,11 @@ export default function createScene(canvas) {
   scene.on('transform', triggerTransform);
 
   scene.setClearColor(0xf7/0xff, 0xf2/0xff, 0xe8/0xff, 1.0);
+  let camera = scene.getCamera();
+  if (camera.setMoveSpeed) {
+    camera.setMoveSpeed(200);
+    camera.setRotationSpeed(Math.PI/500);
+  }
 
   let gl = scene.getGL();
   gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
@@ -109,8 +114,6 @@ export default function createScene(canvas) {
     add,
 
     load,
-
-    getProjectedVisibleRect
   };
 
   return sceneAPI; // Public bit is over. Below are just implementation details.
@@ -168,23 +171,20 @@ export default function createScene(canvas) {
     }
   }
 
-  function triggerTransform() {
+  function triggerTransform(t) {
     bus.$emit('scene-transform');
-  }
+    if (!camera.setMoveSpeed) return;
 
-  function getProjectedVisibleRect() {
-    var leftTop = scene.getSceneCoordinate(0, 0);
-    var bottomRight = scene.getSceneCoordinate(window.innerWidth, window.innerHeight);
-    let rect = {
-      left: leftTop.x,
-      top: leftTop.y,
-      right: bottomRight.x,
-      bottom: bottomRight.y
-    };
-    rect.width = rect.right - rect.left;
-    rect.height = rect.bottom - rect.top;
-
-    return rect;
+    let z = Math.abs(t.origin[2]);
+    let speed = 1;
+    if (z < 0.1) {
+      speed = 0.001;
+    } else {
+      speed = Math.PI / 1000 * z / 100
+    }
+    if (camera.setMoveSpeed) {
+      camera.setMoveSpeed(speed * 200);
+    }
   }
 
   function listenToEvents() {
@@ -200,13 +200,15 @@ export default function createScene(canvas) {
   function onKeyDown(e) {
     if (e.shiftKey) {
       slowDownZoom = true;
-      scene.getPanzoom().setZoomSpeed(0.1);
+      camera.setSpeed(0.1);
+      // scene.getPanzoom().setZoomSpeed(0.1);
     } 
   }
 
   function onKeyUp(e) {
     if (!e.shiftKey && slowDownZoom) {
-      scene.getPanzoom().setZoomSpeed(1);
+      camera.setSpeed(1);
+      // scene.getPanzoom().setZoomSpeed(1);
       slowDownZoom = false;
     }
   }

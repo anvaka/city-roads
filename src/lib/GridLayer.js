@@ -54,9 +54,9 @@ export default class GridLayer {
     let initialSceneSize = Math.max(width, height) / 4;
     return {
       left:  -initialSceneSize,
-      top:   -initialSceneSize,
+      top:    initialSceneSize,
       right:  initialSceneSize,
-      bottom: initialSceneSize,
+      bottom: -initialSceneSize,
     };
   }
 

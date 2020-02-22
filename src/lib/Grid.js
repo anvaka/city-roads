@@ -146,7 +146,7 @@ export default class Grid {
 
       return {
         x: xyPoint[0],
-        y: xyPoint[1]
+        y: -xyPoint[1]
       };
     }
   }
