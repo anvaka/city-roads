@@ -395,6 +395,7 @@ input {
   flex-shrink: 0;
   justify-content: center;
   outline: none;
+  z-index: 1;
   color: highlight-color
   &:hover {
     color: emphasis-background;
