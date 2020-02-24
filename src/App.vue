@@ -204,7 +204,7 @@ export default {
         a.href = url;
         a.download = fileName;
         a.click();
-        window.URL.revokeObjectURL(url);
+        revokeLater(url);
       }, 'image/png')
     },
 
@@ -220,7 +220,7 @@ export default {
         a.href = url;
         a.download = fileName;
         a.click();
-        window.URL.revokeObjectURL(url);
+        revokeLater(url);
       }, 30)
     },
 
@@ -239,7 +239,7 @@ export default {
       a.href = url;
       a.download = lastGrid.id + '.pbf';
       a.click();
-      window.URL.revokeObjectURL(url);
+      revokeLater(url);
     },
 
     updateLinesColor() {
@@ -363,6 +363,14 @@ function recordOpenClick(link) {
       eventAction: 'click',
       eventLabel: link
     });
+}
+
+function revokeLater(url) {
+  // In iOS immediately revoked URLs cause "WebKitBlobResource error 1." error
+  // Setting a timeout to revoke URL in the future fixes the error:
+  setTimeout(() => {
+    window.URL.revokeObjectURL(url);
+  }, 45000);
 }
 </script>
 
