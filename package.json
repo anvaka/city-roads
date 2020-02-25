@@ -20,7 +20,7 @@
     "tinycolor2": "^1.4.1",
     "vue": "^2.5.2",
     "vue-color": "^2.7.0",
-    "w-gl": "^0.8.3"
+    "w-gl": "^0.8.4"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",
