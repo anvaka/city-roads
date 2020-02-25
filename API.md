@@ -31,7 +31,7 @@ so it will appear very far away on the top left corner. Let's move Tokyo grid ne
 tokyo = scene.queryLayer('Tokyo');
 
 // Exact offset numbers can be found by experimenting
-tokyo.moveTo(/* xOffset = */ 718000, /* yOffset = */ 745000)
+tokyo.moveBy(/* xOffset = */ 718000, /* yOffset = */ 745000)
 ```
 
 `scene.load()` has the following signature:

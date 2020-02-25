@@ -61,15 +61,16 @@ export default class GridLayer {
   }
 
   moveTo(x, y = 0) {
-    this.dx = x;
-    this.dy = y;
+    console.warn('Please use moveBy() instead. The moveTo() is under construction');
+    // this.dx = x;
+    // this.dy = y;
 
-    this._transferTransform();
+    // this._transferTransform();
   }
 
   moveBy(dx, dy = 0) {
-    this.dx += dx;
-    this.dy += dy;
+    this.dx = dx;
+    this.dy = dy;
 
     this._transferTransform();
   }
@@ -128,9 +129,7 @@ export default class GridLayer {
   _transferTransform() {
     if (!this.lines) return;
 
-    this.lines.transform.dx = this.dx;
-    this.lines.transform.dy = this.dy;
-    this.lines.transform.scale = this.scale;
+    this.lines.translate([this.dx, this.dy, 0]);
     this.lines.updateWorldTransform(true);
     if (this.scene) {
       this.scene.renderFrame(true);
