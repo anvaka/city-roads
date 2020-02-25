@@ -128,16 +128,16 @@ export default {
     }
   },
   created() {
-    bus.$on('scene-transform', this.handleSceneTransform);
-    bus.$on('background-color', this.syncBackground);
-    bus.$on('line-color', this.syncLineColor);
+    bus.on('scene-transform', this.handleSceneTransform);
+    bus.on('background-color', this.syncBackground);
+    bus.on('line-color', this.syncLineColor);
   },
   
   beforeDestroy() {
     this.dispose();
-    bus.$off('scene-transform', this.handleSceneTransform);
-    bus.$off('background-color', this.syncBackground);
-    bus.$off('line-color', this.syncLineColor);
+    bus.off('scene-transform', this.handleSceneTransform);
+    bus.off('background-color', this.syncBackground);
+    bus.off('line-color', this.syncLineColor);
   },
   methods: {
     dispose() {

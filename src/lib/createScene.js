@@ -4,6 +4,7 @@ import Query from './Query';
 import LoadOptions from './LoadOptions.js';
 import config from '../config';
 import tinycolor from 'tinycolor2';
+import eventify from 'ngraph.events';
 
 /**
  * This file is responsible for rendering of the grid. It uses my silly 2d webgl
@@ -14,6 +15,7 @@ const wgl = require('w-gl');
 
 export default function createScene(canvas) {
   let scene = wgl.scene(canvas);
+  let lastLineColor = config.getDefaultLineColor();
   scene.on('transform', triggerTransform);
 
   scene.setClearColor(0xf7/0xff, 0xf2/0xff, 0xe8/0xff, 1.0);
@@ -88,12 +90,14 @@ export default function createScene(canvas) {
       layers.forEach(layer => {
         layer.color = color;
       });
-      bus.$emit('line-color', tinycolor(color));
+      lastLineColor = tinycolor(color);
+      bus.fire('line-color', lastLineColor);
+      sceneAPI.fire('line-color', lastLineColor);
     },
 
     get lineColor() {
       let firstLayer = queryLayer();
-      return (firstLayer && firstLayer.color) || config.getDefaultLineColor();
+      return (firstLayer && firstLayer.color) || lastLineColor;
     },
 
     /**
@@ -104,7 +108,8 @@ export default function createScene(canvas) {
       let c = backgroundColor.toRgb();
       scene.setClearColor(c.r/0xff, c.g/0xff, c.b/0xff, c.a);
       scene.renderFrame();
-      bus.$emit('background-color', backgroundColor);
+      bus.fire('background-color', backgroundColor);
+      sceneAPI.fire('background-color', backgroundColor);
     },
 
     get background() {
@@ -116,7 +121,7 @@ export default function createScene(canvas) {
     load,
   };
 
-  return sceneAPI; // Public bit is over. Below are just implementation details.
+  return eventify(sceneAPI); // Public bit is over. Below are just implementation details.
 
   /**
    * Experimental API. Can be changed/removed at any point.
@@ -172,7 +177,7 @@ export default function createScene(canvas) {
   }
 
   function triggerTransform(t) {
-    bus.$emit('scene-transform');
+    bus.fire('scene-transform');
     if (!camera.setMoveSpeed) return;
 
     let z = Math.abs(t.origin[2]);
@@ -201,14 +206,12 @@ export default function createScene(canvas) {
     if (e.shiftKey) {
       slowDownZoom = true;
       camera.setSpeed(0.1);
-      // scene.getPanzoom().setZoomSpeed(0.1);
     } 
   }
 
   function onKeyUp(e) {
     if (!e.shiftKey && slowDownZoom) {
       camera.setSpeed(1);
-      // scene.getPanzoom().setZoomSpeed(1);
       slowDownZoom = false;
     }
   }
