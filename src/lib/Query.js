@@ -19,6 +19,11 @@ export default class Query {
   static Road = 'way[highway]';
 
   /**
+   * Reduced set of roads
+   */
+  static RoadBasic = 'way[highway~"^(motorway|primary|secondary|tertiary)|residential"]';
+
+  /**
    * More accurate representation of the roads by @RicoElectrico.
    */
   static RoadStrict = 'way[highway~"^(((motorway|trunk|primary|secondary|tertiary)(_link)?)|unclassified|residential|living_street|pedestrian|service|track)$"][area!=yes]';
