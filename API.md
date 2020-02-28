@@ -63,7 +63,7 @@ scene.load(Query.Building, { // Load all buildings...
 
 Returns all layers added to the scene. This is what it takes to assign different colors to each layer:
 
-```
+``` js
 allLayers = scene.queryLayerAll()
 allLayers[0].color = 'deepskyblue'; // color can be a name.
 allLayers[1].color = 'rgb(255, 12, 43)'; // or a any other expression (rgb, hex, hsl, etc.)
@@ -72,3 +72,29 @@ allLayers[1].color = 'rgb(255, 12, 43)'; // or a any other expression (rgb, hex,
 ### `scene.clear()`
 
 Clears the current scene, allowing you to start from scratch.
+
+
+### `scene.saveToPNG(fileName: string)`
+
+To save the current scene as a PNG file run
+
+``` js
+scene.saveToPNG('hello'); // hello.png is saved
+```
+
+### `scene.saveToSVG(fileName: string, options?: Object)`
+
+This command allows you to save the scene as an SVG file.
+
+``` js
+scene.saveToSVG('hello'); // hello.svg is saved
+```
+
+If you are planning to use a pen-plotter or a laser cutter, you can also
+greatly reduce the print time, by removing very short paths from the final
+export. To do so, pass `minLength` option:
+
+``` js
+scene.saveToSVG('hello', {minLength: 2}); 
+// All paths with length shorter than 2px are removed from the final SVG.
+```
