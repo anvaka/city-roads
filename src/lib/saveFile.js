@@ -3,7 +3,10 @@ import svgExport from './svgExport';
 
 export function toSVG(scene, options) {
   options = options || {};
-  let svg = svgExport(scene, { labels: collectText() });
+  let svg = svgExport(scene, { 
+    labels: collectText() ,
+    ...options
+  });
   let blob = new Blob([svg], {type: "image/svg+xml"});
   let url = window.URL.createObjectURL(blob);
   let fileName = getFileName(options.name, '.svg');
