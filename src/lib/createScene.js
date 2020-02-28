@@ -5,16 +5,17 @@ import LoadOptions from './LoadOptions.js';
 import config from '../config';
 import tinycolor from 'tinycolor2';
 import eventify from 'ngraph.events';
+import {toSVG, toPNG} from './saveFile';
 
+const wgl = require('w-gl');
 /**
  * This file is responsible for rendering of the grid. It uses my silly 2d webgl
  * renderer which is not very well documented, neither popular, yet it is very
  * fast.
  */
-const wgl = require('w-gl');
 
 export default function createScene(canvas) {
-  let scene = wgl.scene(canvas);
+  let scene = wgl.createScene(canvas);
   let lastLineColor = config.getDefaultLineColor();
   scene.on('transform', triggerTransform);
 
@@ -67,6 +68,7 @@ export default function createScene(canvas) {
     },
 
     getWGL() {
+      // Let the plugins use the same version of wgl library
       return wgl;
     },
 
@@ -118,7 +120,14 @@ export default function createScene(canvas) {
 
     add,
 
+    /**
+     * Executes an OverPass query and loads results into scene.
+     */
     load,
+
+    saveToPNG,
+
+    saveToSVG
   };
 
   return eventify(sceneAPI); // Public bit is over. Below are just implementation details.
@@ -174,6 +183,14 @@ export default function createScene(canvas) {
         scene.setViewBox(viewBox);
       }
     }
+  }
+
+  function saveToPNG(name) {
+    return toPNG(sceneAPI, {name});
+  }
+
+  function saveToSVG(name, options) {
+    return toSVG(sceneAPI, Object.assign({}, {name}, options));
   }
 
   function triggerTransform(t) {

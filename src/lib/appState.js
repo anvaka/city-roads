@@ -7,7 +7,6 @@ const queryState = createQueryState({}, {useSearch: true});
  * custom settings and integrates with query string.
  */
 export default {
-  drawLabels: true,
   isCacheEnabled() {
     return queryState.get('cache') != 0;
   },
