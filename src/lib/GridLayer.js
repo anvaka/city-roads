@@ -39,6 +39,7 @@ export default class GridLayer {
     this.dx = 0;
     this.dy = 0;
     this.scale = 1;
+    this.hidden = false;
     this.id = 'paths_' + counter;
     this._lineWidth = 1;
     counter += 1;
@@ -120,6 +121,27 @@ export default class GridLayer {
     if (!this.grid) return;
 
     this.buildLinesCollection();
+
+    if (this.hidden) return;
+    this.scene.appendChild(this.lines);
+  }
+
+  hide() {
+    if (this.hidden) return;
+    this.hidden = true;
+    if (!this.scene || !this.grid) return;
+
+    this.scene.removeChild(this.lines);
+  }
+
+  show() {
+    if (!this.hidden) return;
+    this.hidden = false;
+    if (!this.scene || !this.grid) {
+      console.log('Layer will be shown when grid is available');
+      return;
+    }
+
     this.scene.appendChild(this.lines);
   }
 
