@@ -28,11 +28,7 @@ export default class GridLayer {
     this._lineWidth = newValue;
     if (!this.lines || !this.scene) return;
 
-    this.scene.removeChild(this.lines);
-    this.lines = null;
-    this.buildLinesCollection();
-
-    this.scene.appendChild(this.lines);
+    this.lines.setLineWidth(newValue);
   }
 
   constructor() {
