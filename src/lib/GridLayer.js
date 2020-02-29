@@ -20,6 +20,21 @@ export default class GridLayer {
     }
   }
 
+  get lineWidth() {
+    return this._lineWidth;
+  }
+
+  set lineWidth(newValue) {
+    this._lineWidth = newValue;
+    if (!this.lines || !this.scene) return;
+
+    this.scene.removeChild(this.lines);
+    this.lines = null;
+    this.buildLinesCollection();
+
+    this.scene.appendChild(this.lines);
+  }
+
   constructor() {
     this._color = config.getDefaultLineColor();
     this.grid = null;
@@ -29,6 +44,7 @@ export default class GridLayer {
     this.dy = 0;
     this.scale = 1;
     this.id = 'paths_' + counter;
+    this._lineWidth = 1;
     counter += 1;
   }
 
@@ -75,35 +91,20 @@ export default class GridLayer {
     this._transferTransform();
   }
 
-  getLinesCollection() {
+  buildLinesCollection() {
     if (this.lines) return this.lines;
 
     let grid = this.grid;
-    let lineWidth = 1;
-    let lines;
-    if (lineWidth < 2) {
-      // Wire collection cannot have width, this reduces amount of memory it needs
-      // though doesn't let us render nice thick lines.
-      lines = new wgl.WireCollection(grid.wayPointCount);
-      grid.forEachWay(function(from, to) {
-        lines.add({from, to});
-      });
-    }  else {
-      // This is not exposed anywhere, gives thick lines, though the caps are
-      // jagged.
-      lines = new wgl.LineCollection(grid.wayPointCount);
-      grid.forEachWay(function(from, to) {
-        let ui = lines.add({from, to});
-        ui.setWidth(lineWidth);
-        ui.update(from, to);
-      });
-    }
-
+    let lines = new wgl.WireCollection(grid.wayPointCount, {
+      width: this._lineWidth
+    });
+    grid.forEachWay(function(from, to) {
+      lines.add({from, to});
+    });
     let color = tinycolor(this._color).toRgb();
     lines.color = toRatioColor(color);
 
     this.lines = lines;
-    return lines;
   }
 
   destroy() {
@@ -122,8 +123,8 @@ export default class GridLayer {
     this.scene = scene;
     if (!this.grid) return;
 
-    let lines = this.getLinesCollection();
-    this.scene.appendChild(lines);
+    this.buildLinesCollection();
+    this.scene.appendChild(this.lines);
   }
 
   _transferTransform() {
