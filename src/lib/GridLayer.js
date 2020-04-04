@@ -93,7 +93,9 @@ export default class GridLayer {
 
     let grid = this.grid;
     let lines = new wgl.WireCollection(grid.wayPointCount, {
-      width: this._lineWidth
+      width: this._lineWidth,
+      allowColors: false,
+      is3D: false
     });
     grid.forEachWay(function(from, to) {
       lines.add({from, to});

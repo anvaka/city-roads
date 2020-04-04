@@ -73,7 +73,7 @@ export default function createScene(canvas) {
     },
 
     version() {
-      return '0.0.1'; // here be dragons
+      return '0.0.2'; // here be dragons
     },
 
     /**
@@ -222,13 +222,13 @@ export default function createScene(canvas) {
   function onKeyDown(e) {
     if (e.shiftKey) {
       slowDownZoom = true;
-      camera.setSpeed(0.1);
+      if (camera.setSpeed) camera.setSpeed(0.1);
     } 
   }
 
   function onKeyUp(e) {
     if (!e.shiftKey && slowDownZoom) {
-      camera.setSpeed(1);
+      if (camera.setSpeed) camera.setSpeed(1);
       slowDownZoom = false;
     }
   }
