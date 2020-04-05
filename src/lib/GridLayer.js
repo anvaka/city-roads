@@ -50,7 +50,13 @@ export default class GridLayer {
   }
 
   getQueryBounds() {
-    if (this.grid) return this.grid.queryBounds;
+    const {grid} = this;
+    if (grid) {
+      if (grid.queryBounds) return grid.queryBounds;
+      if (grid.isArea) return {
+        areaId: grid.id
+      };
+    }
   }
 
   setGrid(grid) {
