@@ -82,6 +82,7 @@ export default function createScene(canvas) {
     dispose() {
       scene.clear();
       scene.dispose();
+      sceneAPI.fire('dispose', sceneAPI);
       unsubscribeFromEvents();
     },
 
