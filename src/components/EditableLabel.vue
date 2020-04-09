@@ -1,5 +1,5 @@
 <template>
-  <div v-click-outside='looseFocus'>
+  <div v-click-outside='looseFocus' class='tracked'>
     <div class='editable-label'>
       <span :class='{printable}'>{{value}}</span>
       <input
@@ -15,11 +15,18 @@ import ClickOutside from './clickOutside.js'
 
 export default {
   name: 'EditableLabel',
-  props: ['value', 'printable'],
+  props: ['value', 'printable', 'overlayManager'],
   directives: { ClickOutside },
+  mounted() {
+    this.$el.receiveFocus = this.focus;
+  },
   methods: {
     looseFocus() {
       this.$refs.input.blur();
+    },
+    focus() {
+      this.$refs.input.focus();
+      this.overlayManager.pause(true);
     }
   }
 }
@@ -55,11 +62,6 @@ export default {
     left: 0;
     width: 100%;
     padding: 8px;
-    border: 1px solid transparent;
-    &:focus {
-      border: 1px dashed highlight-color;
-    }
-
   }
 }
   

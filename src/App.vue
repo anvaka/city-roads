@@ -77,10 +77,11 @@
           </p>
         </div>
       </div>
-      <editable-label v-model='name' class='city-name' :printable='true' :style='{color: labelColorRGBA}'></editable-label>
-      <div class='license printable' :style='{color: labelColorRGBA}'>data <a href='https://www.openstreetmap.org/about/' target="_blank" :style='{color: labelColorRGBA}'>© OpenStreetMap</a></div>
     </div>
   </div>
+
+  <editable-label v-if='placeFound' v-model='name' class='city-name' :printable='true' :style='{color: labelColorRGBA}' :overlay-manager='overlayManager'></editable-label>
+  <div v-if='placeFound' class='license printable tracked' :style='{color: labelColorRGBA}'>data <a href='https://www.openstreetmap.org/about/' target="_blank" :style='{color: labelColorRGBA}'>© OpenStreetMap</a></div>
   </div>
 </template>
 
@@ -97,6 +98,7 @@ import {getPrintableCanvas, getCanvas} from './lib/saveFile';
 import config from './config';
 import './lib/canvas2BlobPolyfill';
 import bus from './lib/bus';
+import createOverlayManager from './createOverlayManager';
 
 let lastGrid;
 
@@ -130,9 +132,10 @@ export default {
     bus.on('scene-transform', this.handleSceneTransform);
     bus.on('background-color', this.syncBackground);
     bus.on('line-color', this.syncLineColor);
+    this.overlayManager = createOverlayManager();
   },
-  
   beforeDestroy() {
+    this.overlayManager.dispose();
     this.dispose();
     bus.off('scene-transform', this.handleSceneTransform);
     bus.off('background-color', this.syncBackground);
@@ -270,9 +273,26 @@ function recordOpenClick(link) {
   margin: 8px;
   max-height: 100vh;
   position: absolute;
+  z-index: 1;
   h3 {
     font-weight: normal;
   }
+}
+
+.tracked {
+  border: 1px solid transparent;
+}
+
+.drag-overlay {
+  position: fixed;
+  background: transparent;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+.overlay-active {
+  border: 1px dashed highlight-color;
 }
 
 .controls {
@@ -393,7 +413,7 @@ a:focus {
 }
 
 .city-name {
-  position: fixed;
+  position: absolute;
   right: 32px;
   bottom: 54px;
   font-size: 24px;
@@ -434,18 +454,18 @@ a:focus {
       font-size: 12px;
     }
 
-    .license  {
-      right: 8px;
-      bottom: 8px;
-    }
     .print-window {
       font-size: 14px;
     }
 
-    .city-name  {
-      right: 8px;
-      bottom: 24px;
-    }
+  }
+  .city-name  {
+    right: 8px;
+    bottom: 24px;
+  }
+  .license  {
+    right: 8px;
+    bottom: 8px;
   }
 }
 

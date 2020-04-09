@@ -42,8 +42,8 @@ Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright
       
       // Note: this is not 100% accurate, might need to be fixed eventually
       let bounds = label.bounds;
-      let leftOffset = bounds.right * dpr;
-      let bottomOffset = bounds.bottom * dpr;
+      let leftOffset = (bounds.right - label.paddingRight) * dpr;
+      let bottomOffset = (bounds.bottom - label.paddingBottom) * dpr;
       let fontSize = label.fontSize * dpr;
 
       let fontFamily = label.fontFamily.replace(/"/g, '\'');

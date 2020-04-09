@@ -49,7 +49,7 @@ export function getPrintableCanvas(scene) {
   scene.render();
   ctx.drawImage(cityCanvas, 0, 0, cityCanvas.width, cityCanvas.height, 0, 0, width, height);
 
-  collectText().forEach(label => drawHtml(label, ctx));
+  collectText().forEach(label => drawTextLabel(label, ctx));
 
   return printable;
 }
@@ -70,7 +70,7 @@ function escapeFileName(str) {
 }
 
 
-function drawHtml(element, ctx) {
+function drawTextLabel(element, ctx) {
   if (!element) return;
 
   ctx.save();
@@ -79,10 +79,13 @@ function drawHtml(element, ctx) {
   ctx.font = dpr * element.fontSize + 'px ' + element.fontFamily;
   ctx.fillStyle = element.color;
   ctx.textAlign = 'end'
-  ctx.fillText(element.text, element.bounds.right * dpr, element.bounds.bottom * dpr)
+  ctx.fillText(
+    element.text, 
+    (element.bounds.right - element.paddingRight) * dpr, 
+    (element.bounds.bottom - element.paddingBottom) * dpr
+  )
   ctx.restore();
 }
-
 
 function collectText() {
   return Array.from(
@@ -91,11 +94,17 @@ function collectText() {
     let computedStyle = window.getComputedStyle(element);
     let bounds = element.getBoundingClientRect();
     let fontSize = Number.parseInt(computedStyle.fontSize, 10);
+    let paddingRight = Number.parseInt(computedStyle.paddingRight, 10);
+    // TODO: I don't know why I need to multiply by 2, it's just
+    // not aligned right if I don't multiply. Need to figure out this.
+    let paddingBottom = Number.parseInt(computedStyle.paddingBottom, 10) * 2;
 
     return {
       text: element.innerText,
       bounds,
       fontSize,
+      paddingBottom,
+      paddingRight,
       color: computedStyle.color,
       fontFamily: computedStyle.fontFamily,
       fill: computedStyle.color,
