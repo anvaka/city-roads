@@ -196,18 +196,6 @@ export default function createScene(canvas) {
 
   function triggerTransform(t) {
     bus.fire('scene-transform');
-    if (!camera.setMoveSpeed) return;
-
-    let z = Math.abs(t.origin[2]);
-    let speed = 1;
-    if (z < 0.1) {
-      speed = 0.001;
-    } else {
-      speed = Math.PI / 1000 * z / 100
-    }
-    if (camera.setMoveSpeed) {
-      camera.setMoveSpeed(speed * 200);
-    }
   }
 
   function listenToEvents() {
