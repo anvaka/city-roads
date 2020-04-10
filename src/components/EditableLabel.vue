@@ -1,5 +1,5 @@
 <template>
-  <div v-click-outside='looseFocus' class='tracked'>
+  <div v-click-outside='looseFocus' class='can-drag'>
     <div class='editable-label'>
       <span :class='{printable}'>{{value}}</span>
       <input

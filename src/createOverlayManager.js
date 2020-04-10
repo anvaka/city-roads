@@ -149,7 +149,7 @@ export default function createOverlayManager() {
   }
 
   function findTrackedElementUnderCursor(x, y) {
-    let autoTrack = document.querySelectorAll('.tracked');
+    let autoTrack = document.querySelectorAll('.can-drag');
     for (let i = 0; i < autoTrack.length; ++i) {
       let el = autoTrack[i];
       let rect = getRectangle(el);
@@ -184,7 +184,7 @@ export default function createOverlayManager() {
 
   function track(domElement, options) {
     domElement.style.pointerEvents = 'none'
-    domElement.classList.add('tracked');
+    domElement.classList.add('can-drag');
 
     if (options) {
       if (options.receiveFocus) domElement.receiveFocus = options.receiveFocus;
