@@ -147,8 +147,6 @@ export default {
     },
     toggleSettings() {
       this.showSettings = !this.showSettings;
-      // TODO: Should just listen to focus changes in overlay manager and update
-      if (this.showSettings) this.overlayManager.clear();
     },
     handleSceneTransform() {
       this.zazzleLink = null;
@@ -206,6 +204,7 @@ export default {
     },
 
     updateLayers() {
+      // TODO: This method likely doesn't belong here
       let newLayers = [];
       let lastLayer = 0;
       let renderer = this.scene.getRenderer();
@@ -222,6 +221,7 @@ export default {
           this.zazzleLink = null;
           layer.color = toRatioColor(newColor);
           renderer.renderFrame();
+          this.scene.fire('color-change', layer);
         }));
       });
 
@@ -264,17 +264,17 @@ export default {
         return;
       }
 
-      let printableCanvas = getPrintableCanvas(this.scene);
-
       this.generatingPreview = true;
-      generateZazzleLink(printableCanvas).then(link => {
-        this.zazzleLink = link;
-        window.open(link, '_blank');
-        recordOpenClick(link);
-        this.generatingPreview = false;
-      }).catch(e => {
-        this.error = e;
-        this.generatingPreview = false;
+      getPrintableCanvas(this.scene).then(printableCanvas => {
+        generateZazzleLink(printableCanvas).then(link => {
+          this.zazzleLink = link;
+          window.open(link, '_blank');
+          recordOpenClick(link);
+          this.generatingPreview = false;
+        }).catch(e => {
+          this.error = e;
+          this.generatingPreview = false;
+        });
       });
     }
   }

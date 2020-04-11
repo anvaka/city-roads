@@ -10,7 +10,7 @@ Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright
 -->`;
     },
     close() {
-      return getLabelText();
+      return getPrintableElements();
     }
   };
 
@@ -30,24 +30,42 @@ Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright
 
   return svg;
 
-  function getLabelText() {
+  function getPrintableElements() {
     let dpr = renderer.getPixelRatio();
-    return options.labels.map(label => {
-      if (!label.text) return;
 
-      let insecurelyEscaped = label.text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-      
-      // Note: this is not 100% accurate, might need to be fixed eventually
-      let bounds = label.bounds;
-      let leftOffset = (bounds.right - label.paddingRight) * dpr;
-      let bottomOffset = (bounds.bottom - label.paddingBottom) * dpr;
-      let fontSize = label.fontSize * dpr;
+    return options.printable.map(el => {
+      if (el.element instanceof SVGSVGElement) {
+        let bounds = el.bounds;
+        let x = bounds.left * dpr;
+        let y = bounds.top * dpr;
+        let svg = el.element;
+        svg.setAttribute('x', bounds.left * dpr);
+        svg.setAttribute('y', bounds.top * dpr);
+        svg.setAttribute('width', bounds.width * dpr);
+        svg.setAttribute('height', bounds.height * dpr);
+        let content = new XMLSerializer().serializeToString(el.element);
+        svg.removeAttribute('x');
+        svg.removeAttribute('y');
+        svg.removeAttribute('width');
+        svg.removeAttribute('height');
+        return content;
+      } else {
+        let label = el;
+        if (!label.text) return;
+        let insecurelyEscaped = label.text
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+        
+        // Note: this is not 100% accurate, might need to be fixed eventually
+        let bounds = label.bounds;
+        let leftOffset = (bounds.right - label.paddingRight) * dpr;
+        let bottomOffset = (bounds.bottom - label.paddingBottom) * dpr;
+        let fontSize = label.fontSize * dpr;
 
-      let fontFamily = label.fontFamily.replace(/"/g, '\'');
-      return `<text text-anchor="end" x="${leftOffset}" y="${bottomOffset}" fill="${label.color}" font-family="${fontFamily}" font-size="${fontSize}">${insecurelyEscaped}</text>`
+        let fontFamily = label.fontFamily.replace(/"/g, '\'');
+        return `<text text-anchor="end" x="${leftOffset}" y="${bottomOffset}" fill="${label.color}" font-family="${fontFamily}" font-size="${fontSize}">${insecurelyEscaped}</text>`
+      }
     }).filter(x => x).join('\n')
   }
 }
