@@ -19,6 +19,7 @@ export default {
   directives: { ClickOutside },
   mounted() {
     this.$el.receiveFocus = this.focus;
+    this.$el.style.pointerEvents = 'none';
   },
   methods: {
     looseFocus() {
@@ -26,7 +27,6 @@ export default {
     },
     focus() {
       this.$refs.input.focus();
-      this.overlayManager.pause(true);
     }
   }
 }

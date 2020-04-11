@@ -1,6 +1,5 @@
 export default function createOverlayManager() {
   let overlay;
-  let isPaused;
   let downEvent = {
     clickedElement: null,
     x: 0,
@@ -19,13 +18,6 @@ export default function createOverlayManager() {
   return {
     track,
     dispose,
-    pause(newIsPaused) {
-       isPaused = newIsPaused; 
-      }
-  }
-
-  function pause(newIsPaused) {
-    isPaused = newIsPaused;
   }
 
   function handleMouseDown(e) {
@@ -76,7 +68,7 @@ export default function createOverlayManager() {
     if (activeOverlays.length === 1) downEvent.clickedElement = activeOverlays[0];
 
     let secondTimeClicking = foundElement && foundElement === downEvent.clickedElement;
-    let shouldAddOverlay = !isPaused && secondTimeClicking
+    let shouldAddOverlay = secondTimeClicking && !foundElement.classList.contains('exclusive');
     if (shouldAddOverlay) {
       // prepare for move!
       addOverlay();
@@ -93,9 +85,7 @@ export default function createOverlayManager() {
       let bBox = foundElement.getBoundingClientRect();
       downEvent.dx = bBox.right - downEvent.x; 
       downEvent.dy = bBox.bottom - downEvent.y;
-    } else {
-      isPaused = false;
-    }
+    } 
   }
 
   function onPointerUp(x, y) {
@@ -160,6 +150,7 @@ export default function createOverlayManager() {
   function deselect(el) {
     el.style.pointerEvents = 'none';
     el.classList.remove('overlay-active');
+    el.classList.remove('exclusive')
   }
 
   function select(el) {
@@ -169,6 +160,7 @@ export default function createOverlayManager() {
 
     if (el.classList.contains('overlay-active')) {
       if (el.receiveFocus) el.receiveFocus();
+      el.classList.add('exclusive')
     } else {
       el.classList.add('overlay-active');
     }

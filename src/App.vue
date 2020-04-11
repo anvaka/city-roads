@@ -291,8 +291,12 @@ function recordOpenClick(link) {
   right: 0;
   bottom: 0;
 }
+
 .overlay-active {
   border: 1px dashed highlight-color;
+}
+.overlay-active.exclusive {
+  border-style: solid;
 }
 
 .controls {
