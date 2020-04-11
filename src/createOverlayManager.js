@@ -76,6 +76,12 @@ export default function createOverlayManager() {
     if (activeOverlays.length === 1) downEvent.clickedElement = activeOverlays[0];
 
     let secondTimeClicking = foundElement && foundElement === downEvent.clickedElement;
+    if (secondTimeClicking) {
+      if (!downEvent.clickedElement.contains(e.target)) {
+        foundElement = null;
+        secondTimeClicking = false;
+      }
+    }
     let shouldAddOverlay = secondTimeClicking && !foundElement.classList.contains('exclusive');
     if (shouldAddOverlay) {
       // prepare for move!
@@ -93,7 +99,9 @@ export default function createOverlayManager() {
       let bBox = foundElement.getBoundingClientRect();
       downEvent.dx = bBox.right - downEvent.x; 
       downEvent.dy = bBox.bottom - downEvent.y;
-    } 
+    } else {
+      clear();
+    }
   }
 
   function onPointerUp(x, y) {
