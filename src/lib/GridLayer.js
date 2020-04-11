@@ -108,6 +108,7 @@ export default class GridLayer {
     });
     let color = tinycolor(this._color).toRgb();
     lines.color = toRatioColor(color);
+    lines.id = this.id;
 
     this.lines = lines;
   }

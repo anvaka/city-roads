@@ -9,8 +9,8 @@ export default function createOverlayManager() {
     right: 0
   };
 
-  document.addEventListener('mousedown', handleMouseDown, true);
-  document.addEventListener('mouseup', handleMouseUp, true);
+  document.addEventListener('mousedown', handleMouseDown);
+  document.addEventListener('mouseup', handleMouseUp);
   document.addEventListener('touchstart', handleTouchStart, {passive: false, capture: true});
   document.addEventListener('touchend', handleTouchEnd, true);
   document.addEventListener('touchcancel', handleTouchEnd, true);
@@ -18,6 +18,14 @@ export default function createOverlayManager() {
   return {
     track,
     dispose,
+    clear
+  }
+
+  function clear() {
+    const activeOverlays = document.querySelectorAll('.overlay-active');
+    for (let i = 0; i < activeOverlays.length; ++i) {
+      deselect(activeOverlays[i]);
+    }
   }
 
   function handleMouseDown(e) {
@@ -71,7 +79,7 @@ export default function createOverlayManager() {
     let shouldAddOverlay = secondTimeClicking && !foundElement.classList.contains('exclusive');
     if (shouldAddOverlay) {
       // prepare for move!
-      addOverlay();
+      addDragOverlay();
       e.preventDefault();
       e.stopPropagation();
     } else {
@@ -94,7 +102,7 @@ export default function createOverlayManager() {
 
     if (isSingleClick(x, y)) {
       // forward focus, we didn't move the element
-      select(downEvent.clickedElement);
+      select(downEvent.clickedElement, x, y);
       return true;
     } else {
       downEvent.clickedElement = null;
@@ -109,7 +117,7 @@ export default function createOverlayManager() {
     style.bottom = 100*(window.innerHeight - y - downEvent.dy)/window.innerHeight + '%';
   }
 
-  function addOverlay() {
+  function addDragOverlay() {
     removeOverlay();
 
     overlay = document.createElement('div');
@@ -153,18 +161,27 @@ export default function createOverlayManager() {
     el.classList.remove('exclusive')
   }
 
-  function select(el) {
+  function select(el, x, y) {
     if (!el) return;
 
     el.style.pointerEvents = '';
 
     if (el.classList.contains('overlay-active')) {
+      // When they click second time, we want to forward focus to the element
+      // (if they support focus forwarding)
       if (el.receiveFocus) el.receiveFocus();
+      // and make the element exclusive owner of the mouse/pointer
+      // (so that native interaction can occur and we don't interfere with dragging)
       el.classList.add('exclusive')
     } else {
+      // When they click first time, we enter to "drag around" mode
       el.classList.add('overlay-active');
+      if (el.classList.contains('can-resize')) {
+        // el.resizer = renderResizeHandlers(el);
+      }
     }
   }
+
 
   function intersects(x, y, rect) {
     return !(x < rect.left || x > rect.right || y < rect.top || y > rect.bottom);
@@ -184,12 +201,16 @@ export default function createOverlayManager() {
   }
 
   function dispose() {
-    document.removeEventListener('mousedown', handleMouseDown, true);
-    document.removeEventListener('mouseup', handleMouseUp, true);
-    document.removeEventListener('touchstart', handleTouchStart, true);
-    document.removeEventListener('touchend', handleTouchEnd, true);
-    document.removeEventListener('touchcancel', handleTouchEnd, true);
+    document.removeEventListener('mousedown', handleMouseDown);
+    document.removeEventListener('mouseup', handleMouseUp);
+    document.removeEventListener('touchstart', handleTouchStart);
+    document.removeEventListener('touchend', handleTouchEnd);
+    document.removeEventListener('touchcancel', handleTouchEnd);
     downEvent.clickedElement = undefined;
     removeOverlay();
   }
+}
+
+function renderResizeHandlers(el) {
+  el.getBoundingClientRect(el)
 }

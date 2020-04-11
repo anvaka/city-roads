@@ -4,27 +4,17 @@
   <div id="app">
     <div v-if='placeFound'>
       <div class='controls'>
-        <a href="#" class='print-button' @click.prevent='togglePrintWindow'>Customize...</a>
+        <a href="#" class='print-button' @click.prevent='toggleSettings'>Customize...</a>
         <a href="#" class='try-another' @click.prevent='startOver'>Try another city</a>
       </div>
-      <div v-if='showPrintWindow' class='print-window'>
+      <div v-if='showSettings' class='print-window'>
         <h3>Display</h3>
         <div class='row'>
           <div class='col'>Colors</div>
           <div class='col colors c-2'>
-            <div class='color-container'>
-              <color-picker v-model='lineColor' @change='updateLinesColor'></color-picker>
-              <div class='color-label'>lines</div>
-            </div>
-
-            <div class='color-container'>
-              <color-picker v-model='backgroundColor' @change='updateBackground'></color-picker>
-              <div class='color-label'>background</div>
-            </div>
-
-            <div class='color-container'>
-              <color-picker v-model='labelColor'></color-picker>
-              <div class='color-label'>labels</div>
+            <div v-for='layer in layers' :key='layer.name' class='color-container'>
+              <color-picker v-model='layer.color' @change='layer.changeColor'></color-picker>
+              <div class='color-label'>{{layer.name}}</div>
             </div>
           </div>
         </div>
@@ -99,8 +89,15 @@ import config from './config';
 import './lib/canvas2BlobPolyfill';
 import bus from './lib/bus';
 import createOverlayManager from './createOverlayManager';
+import tinycolor from 'tinycolor2';
 
-let lastGrid;
+class ColorLayer {
+  constructor(name, color, callback) {
+    this.name = name;
+    this.changeColor = callback;
+    this.color = color;
+  }
+}
 
 export default {
   name: 'App',
@@ -116,11 +113,11 @@ export default {
       name: '',
       zazzleLink: null,
       generatingPreview: false,
-      showPrintWindow: false,
+      showSettings: false,
       settingsOpen: false,
-      lineColor: config.getDefaultLineColor().toRgb(),
       labelColor: config.getLabelColor().toRgb(),
       backgroundColor: config.getBackgroundColor().toRgb(),
+      layers: []
     }
   },
   computed: {
@@ -148,8 +145,10 @@ export default {
         window.scene = null;
       }
     },
-    togglePrintWindow() {
-      this.showPrintWindow = !this.showPrintWindow;
+    toggleSettings() {
+      this.showSettings = !this.showSettings;
+      // TODO: Should just listen to focus changes in overlay manager and update
+      if (this.showSettings) this.overlayManager.clear();
     },
     handleSceneTransform() {
       this.zazzleLink = null;
@@ -166,15 +165,17 @@ export default {
       }
       this.placeFound = true;
       this.name = grid.name.split(',')[0];
-      lastGrid = grid;
       let canvas = getCanvas();
       canvas.style.visibility = 'visible';
 
       this.scene = createScene(canvas);
+      this.scene.on('layer-added', this.updateLayers);
+      this.scene.on('layer-removed', this.updateLayers);
+
       window.scene = this.scene;
 
       let gridLayer = new GridLayer();
-      gridLayer.id = 'main';
+      gridLayer.id = 'lines';
       gridLayer.setGrid(grid);
       this.scene.add(gridLayer)
     },
@@ -188,9 +189,8 @@ export default {
       this.dispose();
       this.placeFound = false;
       this.zazzleLink = null;
-      this.showPrintWindow = false;
+      this.showSettings = false;
       this.backgroundColor = config.getBackgroundColor().toRgb();
-      this.lineColor = config.getDefaultLineColor().toRgb();
       this.labelColor = config.getLabelColor().toRgb();
 
       document.body.style.backgroundColor = config.getBackgroundColor().toRgbString();
@@ -205,17 +205,46 @@ export default {
       scene.saveToSVG(this.name)
     },
 
-    updateLinesColor() {
-      this.scene.lineColor = this.lineColor;
+    updateLayers() {
+      let newLayers = [];
+      let lastLayer = 0;
+      let renderer = this.scene.getRenderer();
+      let root = renderer.getRoot();
+      root.children.forEach(layer => {
+        if (!layer.color) return;
+        let name = layer.id;
+        if (!name) {
+          lastLayer += 1;
+          name = 'lines ' + lastLayer;
+        }
+        let layerColor = tinycolor.fromRatio(layer.color);
+        newLayers.push(new ColorLayer(name, layerColor, newColor => {
+          this.zazzleLink = null;
+          layer.color = toRatioColor(newColor);
+          renderer.renderFrame();
+        }));
+      });
+
+      newLayers.push(
+        new ColorLayer('background', this.backgroundColor, this.setBackgroundColor),
+        new ColorLayer('labels', this.labelColor, newColor => this.labelColor = newColor)
+      );
+
+      this.layers = newLayers;
+
+      function toRatioColor(c) {
+        return {r: c.r/0xff, g: c.g/0xff, b: c.b/0xff, a: c.a}
+      }
       this.zazzleLink = null;
     },
 
-    syncLineColor(newColor) {
-      this.lineColor = newColor.toRgb();
+    syncLineColor() {
+      this.updateLayers();
     },
 
     syncBackground(newBackground) {
       this.backgroundColor = newBackground.toRgb();
+      this.updateLayers()
     },
     // TODO: I need two background methods?
     updateBackground() {
@@ -351,6 +380,7 @@ function recordOpenClick(link) {
 .colors {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
 
   .color-container {
     display: flex;

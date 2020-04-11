@@ -95,7 +95,7 @@ export default {
     },
     updateColorObject (color) {
       if (!color) return
-      const colorObj = tinycolor(`rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})` || 'transparent');
+      const colorObj = tinycolor(color);
       if (!color || color === 'transparent') {
         this.colors = {
           hex: '#FFFFFF',

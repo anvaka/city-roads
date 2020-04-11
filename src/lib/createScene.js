@@ -18,6 +18,8 @@ export default function createScene(canvas) {
   let scene = wgl.createScene(canvas);
   let lastLineColor = config.getDefaultLineColor();
   scene.on('transform', triggerTransform);
+  scene.on('append-child', triggerAdd);
+  scene.on('remove-child', triggerRemove);
 
   scene.setClearColor(0xf7/0xff, 0xf2/0xff, 0xe8/0xff, 1.0);
   let camera = scene.getCamera();
@@ -196,6 +198,14 @@ export default function createScene(canvas) {
 
   function triggerTransform(t) {
     bus.fire('scene-transform');
+  }
+
+  function triggerAdd(e) {
+    sceneAPI.fire('layer-added', e);
+  }
+
+  function triggerRemove(e) {
+    sceneAPI.fire('layer-removed', e);
   }
 
   function listenToEvents() {
