@@ -42,6 +42,12 @@ module.exports = {
     rules: [
       ...(config.dev.useEslint ? [createLintingRule()] : []),
       {
+        test: /\.js$/,
+        enforce: 'pre',
+        loader: 'source-map-loader',
+        include: [/w-gl/]
+      },
+      {
         test: /\.vue$/,
         loader: 'vue-loader',
         options: vueLoaderConfig
