@@ -62,7 +62,14 @@ export default {
     left: 0;
     width: 100%;
     padding: 8px;
+    border: none;
+    flex: 1;
+    height: 100%;
+    font-size: 16px;
+    &:focus {
+      outline: none;
+    }
   }
 }
-  
+
 </style>
