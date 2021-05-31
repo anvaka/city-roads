@@ -19,16 +19,13 @@ window.Query = Query;
 if (wgl.isWebGLEnabled(document.querySelector('#canvas'))) {
   /* eslint-disable no-new */
   new Vue({
-    el: '#app',
-    components: { App },
-    template: '<App/>'
-  })
+    render: h => h(App),
+  }).$mount('#app')
 } else {
+
   new Vue({
-    el: '#app',
-    components: { NoWebGL },
-    template: '<NoWebGL/>'
-  })
+    render: h => h(NoWebGL),
+  }).$mount('#app')
 }
 
 function logError(e) {

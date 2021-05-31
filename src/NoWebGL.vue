@@ -12,7 +12,7 @@
 </template>
 <style lang="stylus" scoped>
 
-  .no-webgl {
+.no-webgl {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -25,18 +25,19 @@
     height: 100%;
     text-align: center;
     padding: 8px;
-h3 {
-  font-weight: normal;
-  font-size: 32px;
-  margin: 16px;
+
+    h3 {
+      font-weight: normal;
+      font-size: 32px;
+      margin: 16px;
+    }
+    p {
+      max-width: 400px;
+      margin: 8px 0;
+    }
+    img {
+      width: 100%;
+      max-width: 1440px;
+    }
 }
-p {
-  max-width: 400px;
-  margin: 8px 0;
-}
-img {
-  width: 100%;
-  max-width: 1440px;
-}
-  }
 </style>
