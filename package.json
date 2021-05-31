@@ -20,7 +20,7 @@
     "tinycolor2": "^1.4.1",
     "vue": "^2.6.11",
     "vue-color": "^2.7.0",
-    "w-gl": "^0.10.4"
+    "w-gl": "^0.19.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
