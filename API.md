@@ -113,7 +113,7 @@ bikes.lineWidth = 4
 bikes.color = 'red'
 ```
 
-### Loading all bus routes in teh current city
+### Loading all bus routes in the current city
 
 This script will get all bus routes in the current city, and render them 4px wide, with
 red color:
