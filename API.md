@@ -98,3 +98,17 @@ export. To do so, pass `minLength` option:
 scene.saveToSVG('hello', {minLength: 2}); 
 // All paths with length shorter than 2px are removed from the final SVG.
 ```
+
+## Examples
+
+Here are a few example of working with the API.
+
+### Loading all bikeways in the current city
+
+``` js
+var bikes = scene.load('way[highway="cycleway"]', {layer: scene.queryLayer()})
+// Make lines 4 pixels wide
+bikes.lineWidth = 4
+// and red
+bikes.color = 'red'
+```
