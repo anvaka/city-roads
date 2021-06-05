@@ -112,3 +112,39 @@ bikes.lineWidth = 4
 // and red
 bikes.color = 'red'
 ```
+
+### Loading all bus routes in teh current city
+
+This script will get all bus routes in the current city, and render them 4px wide, with
+red color:
+
+``` js
+var areaId = scene.queryLayer().getQueryBounds().areaId;
+var bus = scene.load('', {
+  layer: scene.queryLayer(),
+  raw: `[out:json][timeout:250];
+area(${areaId});(._; )->.area;
+(nwr[route=bus](area.area););
+out body;>;out skel qt;`
+});
+
+bus.color='red';
+bus.lineWidth = 4;
+```
+
+If you want a specific bus number, pass additional `ref=bus_number`. For example, bus route #24:
+
+``` js
+var areaId = scene.queryLayer().getQueryBounds().areaId;
+var bus = scene.load('', {
+  layer: scene.queryLayer(),
+  raw: `[out:json][timeout:250];
+area(${areaId});(._; )->.area;
+(nwr[route=bus][ref=24](area.area););
+out body;>;out skel qt;`
+});
+
+bus.color = 'green';
+bus.lineWidth = 4;
+```
+
