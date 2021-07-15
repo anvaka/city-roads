@@ -107,6 +107,9 @@ export default {
   },
   mounted() {
     this.$refs.input.focus();
+    if (queryState.get('auto')) {
+      this.onSubmit();
+    }
   },
   beforeDestroy() {
     if (this.lastCancel) this.lastCancel();
