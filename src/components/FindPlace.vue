@@ -4,9 +4,29 @@
     <h3 class='site-header'>city roads</h3>
     <p class='description'>This website renders every single road within a city</p>
   </div>
-  <form v-on:submit.prevent="onSubmit" class='search-box'>
+  <form v-on:submit.prevent='onSubmit' class='search-box'>
+    <div class='row'>
+      <div class='col'>
+        <input type='radio' id='road' :value='Query.Road' v-model='query'>
+        <label for='road'>Roads</label>
+      </div>
+      <div class='col'>
+        <input type='radio' id='roadbasic' :value='Query.RoadBasic' v-model='query'>
+        <label for='roadbasic'>Basic roads</label>
+      </div>
+      <div class='col'>
+        <input type='radio' id='roadstrict' :value='Query.RoadStrict' v-model='query'>
+        <label for='roadstrict'>Strict roads</label>
+      </div>
+      <div class='col'>
+        <input type='radio' id='building' :value='Query.Building' v-model='query'>
+        <label for='building'>Buildings</label>
+      </div>
+    </div>
+    <div class='row'>
       <input class='query-input' v-model='enteredInput' type='text' placeholder='Enter a city name to start' ref='input'>
       <a type='submit' class='search-submit' href='#' @click.prevent='onSubmit' v-if='enteredInput && !hideInput'>{{mainActionText}}</a>
+    </div>
   </form>
   <div v-if='showWarning' class='prompt message note shadow'>
     Note: Large cities may require 200MB+ of data transfer and may need a powerful device to render.
@@ -19,7 +39,7 @@
       </div>
       <ul>
         <li v-for='(suggestion, index) in suggestions' :key="index">
-          <a @click.prevent='pickSuggestion(suggestion)' class='suggestion'
+          <a @click.prevent='pickSuggestion(suggestion, query)' class='suggestion'
           href='#'>
           <span>
           {{suggestion.name}} <small>({{suggestion.type}})</small>
@@ -78,10 +98,13 @@ export default {
   },
   data () {
     const enteredInput = appState.get('q') || '';
+    const query = appState.get('t') || '';
     let hasValidArea = restoreStateFromQueryString();
 
     return {
       enteredInput,
+      query,
+      Query,
       loading: null,
       lastCancel: null,
       suggestionsLoaded: false,
@@ -91,7 +114,7 @@ export default {
       hideInput: false,
       noRoads: false,
       clicked: false,
-      showWarning: hasValidArea, 
+      showWarning: hasValidArea,
       mainActionText: hasValidArea ? 'Download Area' : FIND_TEXT,
       suggestions: []
     }
@@ -118,19 +141,20 @@ export default {
   methods: {
     onSubmit() {
       queryState.set('q', this.enteredInput);
+      queryState.set('t', this.query);
       this.cancelRequest()
       this.suggestions = [];
       this.noRoads = false;
       this.error = false;
       this.showWarning = false;
 
-      const restoredState = restoreStateFromQueryString(this.enteredInput);
+      const restoredState = restoreStateFromQueryString(this.enteredInput)
       if (restoredState) {
-        this.pickSuggestion(restoredState);
+        this.pickSuggestion(restoredState, this.query);
         return;
       }
 
-      const query = encodeURIComponent(this.enteredInput);
+      const osmQuery = encodeURIComponent(this.enteredInput);
       this.loading = 'Searching cities that match your query...'
       findBoundaryByName(this.enteredInput)
         .then(suggestions => {
@@ -146,7 +170,7 @@ export default {
             }, 50)
           } else {
               this.suggestionsLoaded = true;
-              this.suggestions = suggestions; 
+              this.suggestions = suggestions;
           }
         });
     },
@@ -179,24 +203,27 @@ export default {
 
     retry() {
       if (this.lastSuggestion) {
-        this.pickSuggestion(this.lastSuggestion);
+        this.pickSuggestion(this.lastSuggestion, this.lastQuery);
       }
     },
 
-    pickSuggestion(suggestion) {
+    pickSuggestion(suggestion, query) {
+      queryState.set('q', this.enteredInput);
+      queryState.set('t', this.query);
       this.lastSuggestion = suggestion;
+      this.lastQuery = query;
       this.error = false;
       if (appState.isCacheEnabled() && suggestion.areaId) {
-        this.checkCache(suggestion)
+        this.checkCache(suggestion, query)
           .catch(error => {
             if (error.cancelled) return; // no need to do anything. They've cancelled
 
             // No Cache - fallback
-            return this.useOSM(suggestion);
+            return this.useOSM(suggestion, query);
           });
       } else {
         // we don't have cache for nodes yet.
-        this.useOSM(suggestion);
+        this.useOSM(suggestion, query);
       }
     },
 
@@ -208,9 +235,12 @@ export default {
       }, 10000);
     },
 
-    checkCache(suggestion) {
+    checkCache(suggestion, query) {
       this.loading = 'Checking cache...'
       let areaId = suggestion.areaId;
+      if(query !== Query.Road) {
+        return Promise.reject({message: 'No cache-hit for non Road queries.'})
+      }
 
       return request(config.areaServer + '/' + areaId + '.pbf', {
         progress: this.generateNewProgressToken(),
@@ -228,13 +258,13 @@ export default {
       });
     },
 
-    useOSM(suggestion) {
+    useOSM(suggestion, query) {
       this.loading = 'Connecting to OpenStreetMap...'
-      
-      // it may take a while to load data. 
+
+      // it may take a while to load data.
       this.restartLoadingMonitor();
       Query.runFromOptions(new LoadOptions({
-        wayFilter: Query.Road,
+        wayFilter: query,
         areaId: suggestion.areaId,
         bbox: suggestion.bbox
       }), this.generateNewProgressToken())
@@ -350,7 +380,7 @@ h3.site-header {
   text-align: center;
 }
 
-input {
+.query-input {
   border: none;
   flex: 1;
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
@@ -362,7 +392,9 @@ input {
     outline: none;
   }
 }
-
+.row {
+  height: 40px;
+}
 .search-box {
   position: relative;
   background-color: emphasis-background;
@@ -370,8 +402,7 @@ input {
   padding: 0 0 0 8px;
 
   box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 -1px 0px rgba(0,0,0,0.02);
-  height: 48px;
-  display: flex;
+  height: 96px;
   font-size: 16px;
   cursor: text;
   a {
@@ -381,6 +412,10 @@ input {
     display: flex;
     align-items: center;
     flex-shrink: 0;
+  }
+  label {
+    align-items: center;
+    display:flex;
   }
 }
 
