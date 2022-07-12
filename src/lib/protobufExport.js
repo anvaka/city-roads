@@ -1,7 +1,7 @@
-var Pbf = require('pbf');
-var place = require('../proto/place.js').place;
+import Pbf from 'pbf';
+import {place} from '../proto/place.js';
 
-module.exports = function protoBufExport(grid) {
+export default function protoBufExport(grid) {
   let nodes = [];
   let ways = [];
   let date = (new Date()).toISOString();

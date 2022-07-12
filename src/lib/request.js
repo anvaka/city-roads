@@ -1,4 +1,4 @@
-import Progress from './Progress';
+import Progress from './Progress.js';
 
 export default function request(url, options) {
   if (!options) options = {};

@@ -1,4 +1,4 @@
-import findBoundaryByName from "./findBoundaryByName";
+import findBoundaryByName from "./findBoundaryByName.js";
 
 /**
  * For console API we allow a lot of flexibility to fetch data

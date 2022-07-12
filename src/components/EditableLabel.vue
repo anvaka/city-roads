@@ -1,10 +1,10 @@
 <template>
   <div v-click-outside='looseFocus' class='can-drag'>
     <div class='editable-label'>
-      <span :class='{printable}'>{{value}}</span>
+      <span :class='{printable}'>{{modelValue}}</span>
       <input
-        v-bind:value="value"
-        v-on:input="$emit('input', $event.target.value)"
+        v-bind:value="modelValue"
+        v-on:input="$emit('update:modelValue', $event.target.value)"
         ref='input'
       >
     </div>
@@ -15,7 +15,8 @@ import ClickOutside from './clickOutside.js'
 
 export default {
   name: 'EditableLabel',
-  props: ['value', 'printable', 'overlayManager'],
+  props: ['modelValue', 'printable', 'overlayManager'],
+  emits: ['update:modelValue'],
   directives: { ClickOutside },
   mounted() {
     this.$el.receiveFocus = this.focus;

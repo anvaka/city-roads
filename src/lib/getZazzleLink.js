@@ -1,5 +1,5 @@
-import request from './request';
-import Progress from './Progress';
+import request from './request.js';
+import Progress from './Progress.js';
 
 let imageUrl = 'https://edi6jgnosf.execute-api.us-west-2.amazonaws.com/Stage/put_image'
 

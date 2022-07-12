@@ -1,7 +1,7 @@
-import config from '../config';
+import config from '../config.js';
 import tinycolor from 'tinycolor2';
+import {WireCollection} from 'w-gl';
 
-const wgl = require('w-gl');
 let counter = 0;
 
 export default class GridLayer {
@@ -98,7 +98,7 @@ export default class GridLayer {
     if (this.lines) return this.lines;
 
     let grid = this.grid;
-    let lines = new wgl.WireCollection(grid.wayPointCount, {
+    let lines = new WireCollection(grid.wayPointCount, {
       width: this._lineWidth,
       allowColors: false,
       is3D: false

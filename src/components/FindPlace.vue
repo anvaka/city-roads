@@ -58,16 +58,18 @@
 </template>
 
 <script>
-import LoadingIcon from './LoadingIcon';
-import Query from '../lib/Query';
-import request from '../lib/request';
-import findBoundaryByName from '../lib/findBoundaryByName';
-import appState from '../lib/appState';
-import Grid from '../lib/Grid';
-import queryState from '../lib/appState';
-import config from '../config';
-import Progress from '../lib/Progress'
-import LoadOptions from '../lib/LoadOptions';
+import LoadingIcon from './LoadingIcon.vue';
+import Query from '../lib/Query.js';
+import request from '../lib/request.js';
+import findBoundaryByName from '../lib/findBoundaryByName.js';
+import appState from '../lib/appState.js';
+import Grid from '../lib/Grid.js';
+import queryState from '../lib/appState.js';
+import config from '../config.js';
+import Progress from '../lib/Progress.js'
+import LoadOptions from '../lib/LoadOptions.js';
+import Pbf from 'pbf';
+import {place} from '../proto/place.js';
 
 const FIND_TEXT = 'Find City Bounds';
 
@@ -111,7 +113,7 @@ export default {
       this.onSubmit();
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.lastCancel) this.lastCancel();
     clearInterval(this.notifyStillLoading);
   },
@@ -130,7 +132,6 @@ export default {
         return;
       }
 
-      const query = encodeURIComponent(this.enteredInput);
       this.loading = 'Searching cities that match your query...'
       findBoundaryByName(this.enteredInput)
         .then(suggestions => {
@@ -219,8 +220,6 @@ export default {
         var byteArray = new Uint8Array(arrayBuffer);
         return byteArray;
       }).then(byteArray => {
-        var Pbf = require('pbf');
-        var place = require('../proto/place.js').place;
         var pbf = new Pbf(byteArray);
         var obj = place.read(pbf);
         let grid = Grid.fromPBF(obj)

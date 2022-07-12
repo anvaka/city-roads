@@ -1,5 +1,6 @@
 // Based on https://github.com/ElemeFE/element/blob/dev/src/utils/clickoutside.js
 // The MIT License (MIT), Copyright (c) 2016 ElemeFE
+// (C) 2022 anvaka
 const nodeList = [];
 const ctx = '@@clickoutsideContext';
 
@@ -21,43 +22,31 @@ document.addEventListener('touchend', e => {
 
 function createDocumentHandler(el, binding, vnode) {
   return function(mouseup = {}, mousedown = {}) {
-    if (!vnode || !vnode.context ||
-      !mouseup.target || !mousedown.target ||
-      el.contains(mouseup.target) ||
-      el.contains(mousedown.target) ||
-      el === mouseup.target ||
-      (vnode.context.popperElm &&
-      (vnode.context.popperElm.contains(mouseup.target) ||
-      vnode.context.popperElm.contains(mousedown.target)))) return;
+    if (!vnode || !mouseup.target || !mousedown.target ||
+      el.contains(mouseup.target) || el.contains(mousedown.target) || el === mouseup.target) return;
 
-    const methodName = el[ctx].methodName;
-    if (binding.expression && methodName && vnode.context[methodName]) {
-      vnode.context[methodName]();
-    } else {
-      el[ctx].bindingFn && el[ctx].bindingFn();
-    }
+    const methodName = el[ctx].handler;
+    if (methodName) methodName()
   };
 }
 
 export default {
-  bind(el, binding, vnode) {
+  created(el, binding, vnode) {
     nodeList.push(el);
     const id = seed++;
     el[ctx] = {
       id,
       documentHandler: createDocumentHandler(el, binding, vnode),
-      methodName: binding.expression,
-      bindingFn: binding.value
+      handler: binding.value
     };
   },
 
-  update(el, binding, vnode) {
+  updated(el, binding, vnode) {
     el[ctx].documentHandler = createDocumentHandler(el, binding, vnode);
-    el[ctx].methodName = binding.expression;
-    el[ctx].bindingFn = binding.value;
+    el[ctx].handler = binding.value;
   },
 
-  unbind(el) {
+  unmounted(el) {
     let len = nodeList.length;
 
     for (let i = 0; i < len; i++) {

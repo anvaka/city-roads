@@ -1,31 +1,24 @@
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
-import Vue from 'vue';
-import App from './App';
-import NoWebGL from './NoWebGL';
-import Query from './lib/Query';
+import {createApp} from 'vue';
 import {require as d3Require} from 'd3-require';
+import {isWebGLEnabled} from 'w-gl';
+import App from './App.vue';
+import NoWebGL from './NoWebGL.vue';
+import Query from './lib/Query.js';
 
-const wgl = require('w-gl');
+// const wgl = require('w-gl');
 
 window.addEventListener('error', logError);
-
-Vue.config.productionTip = false
 
 // expose the console API
 window.requireModule = d3Require;
 window.Query = Query;
 
-if (wgl.isWebGLEnabled(document.querySelector('#canvas'))) {
-  /* eslint-disable no-new */
-  new Vue({
-    render: h => h(App),
-  }).$mount('#app')
+if (isWebGLEnabled(document.querySelector('#canvas'))) {
+  createApp(App).mount('#host');
 } else {
-
-  new Vue({
-    render: h => h(NoWebGL),
-  }).$mount('#app')
+  createApp(NoWebGL).mount('#host');
 }
 
 function logError(e) {

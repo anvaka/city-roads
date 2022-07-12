@@ -1,5 +1,4 @@
 <template>
-<div>
   <find-place v-if='!placeFound' @loaded='onGridLoaded'></find-place>
   <div id="app">
     <div v-if='placeFound'>
@@ -73,23 +72,22 @@
 
   <editable-label v-if='placeFound' v-model='name' class='city-name' :printable='true' :style='{color: labelColorRGBA}' :overlay-manager='overlayManager'></editable-label>
   <div v-if='placeFound' class='license printable can-drag' :style='{color: labelColorRGBA}'>data <a href='https://www.openstreetmap.org/about/' target="_blank" :style='{color: labelColorRGBA}'>© OpenStreetMap</a></div>
-  </div>
 </template>
 
 <script>
-import FindPlace from './components/FindPlace';
-import LoadingIcon from './components/LoadingIcon';
-import EditableLabel from './components/EditableLabel';
-import ColorPicker from './components/ColorPicker';
-import createScene from './lib/createScene';
-import GridLayer from './lib/GridLayer';
-import generateZazzleLink from './lib/getZazzleLink';
-import appState from './lib/appState';
-import {getPrintableCanvas, getCanvas} from './lib/saveFile';
-import config from './config';
-import './lib/canvas2BlobPolyfill';
-import bus from './lib/bus';
-import createOverlayManager from './createOverlayManager';
+import FindPlace from './components/FindPlace.vue';
+import LoadingIcon from './components/LoadingIcon.vue';
+import EditableLabel from './components/EditableLabel.vue';
+import ColorPicker from './components/ColorPicker.vue';
+import createScene from './lib/createScene.js';
+import GridLayer from './lib/GridLayer.js';
+import generateZazzleLink from './lib/getZazzleLink.js';
+import appState from './lib/appState.js';
+import {getPrintableCanvas, getCanvas} from './lib/saveFile.js';
+import config from './config.js';
+import './lib/canvas2BlobPolyfill.js';
+import bus from './lib/bus.js';
+import createOverlayManager from './createOverlayManager.js';
 import tinycolor from 'tinycolor2';
 
 class ColorLayer {
@@ -132,7 +130,8 @@ export default {
     bus.on('line-color', this.syncLineColor);
     this.overlayManager = createOverlayManager();
   },
-  beforeDestroy() {
+  beforeUnmount() {
+    debugger;
     this.overlayManager.dispose();
     this.dispose();
     bus.off('scene-transform', this.handleSceneTransform);

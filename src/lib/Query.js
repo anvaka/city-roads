@@ -1,6 +1,6 @@
 import postData from './postData';
-import Grid from './Grid';
-import findBoundaryByName from './findBoundaryByName';
+import Grid from './Grid.js';
+import findBoundaryByName from './findBoundaryByName.js';
 
 export default class Query {
   /**

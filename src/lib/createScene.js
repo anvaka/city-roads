@@ -2,12 +2,12 @@ import bus from './bus';
 import GridLayer from './GridLayer';
 import Query from './Query';
 import LoadOptions from './LoadOptions.js';
-import config from '../config';
+import config from '../config.js';
 import tinycolor from 'tinycolor2';
 import eventify from 'ngraph.events';
-import {toSVG, toPNG} from './saveFile';
+import {toSVG, toPNG} from './saveFile.js';
+import * as wgl from 'w-gl';
 
-const wgl = require('w-gl');
 /**
  * This file is responsible for rendering of the grid. It uses my silly 2d webgl
  * renderer which is not very well documented, neither popular, yet it is very

@@ -1,5 +1,5 @@
-import protobufExport from './protobufExport';
-import svgExport from './svgExport';
+// import protobufExport from './protobufExport.js';
+import svgExport from './svgExport.js';
 
 export function toSVG(scene, options) {
   options = options || {};
@@ -143,15 +143,15 @@ function revokeLater(url) {
   }, 45000);
 }
 
-function toProtobuf() {
-  if (!lastGrid) return;
+// function toProtobuf() {
+//   if (!lastGrid) return;
 
-  let arrayBuffer = protobufExport(lastGrid);
-  let blob = new Blob([arrayBuffer.buffer], {type: "application/octet-stream"});
-  let url = window.URL.createObjectURL(blob);
-  let a = document.createElement("a");
-  a.href = url;
-  a.download = lastGrid.id + '.pbf';
-  a.click();
-  revokeLater(url);
-}
+//   let arrayBuffer = protobufExport(lastGrid);
+//   let blob = new Blob([arrayBuffer.buffer], {type: "application/octet-stream"});
+//   let url = window.URL.createObjectURL(blob);
+//   let a = document.createElement("a");
+//   a.href = url;
+//   a.download = lastGrid.id + '.pbf';
+//   a.click();
+//   revokeLater(url);
+// }

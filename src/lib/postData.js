@@ -1,5 +1,5 @@
-import request from './request';
-import Progress from './Progress';
+import request from './request.js';
+import Progress from './Progress.js';
 
 let backends = [
   'https://overpass.kumi.systems/api/interpreter',

@@ -2,7 +2,7 @@
 
 // place ========================================
 
-var place = exports.place = {};
+export const place = {};
 
 place.read = function (pbf, end) {
     return pbf.readFields(place._readField, {version: 0, name: "", date: "", id: "", nodes: [], ways: []}, end);

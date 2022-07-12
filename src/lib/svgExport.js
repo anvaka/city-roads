@@ -1,5 +1,4 @@
-let place = require('../proto/place.js').place;
-const wgl = require('w-gl');
+import {toSVG} from 'w-gl';
 
 export default function svgExport(scene, options) {
   const renderer = scene.getRenderer();
@@ -26,7 +25,7 @@ Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright
   }
   svgExportSettings.round = options.round;
 
-  const svg = wgl.toSVG(renderer, svgExportSettings);
+  const svg = toSVG(renderer, svgExportSettings);
 
   return svg;
 

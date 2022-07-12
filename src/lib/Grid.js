@@ -1,4 +1,4 @@
-import BoundingBox from './BoundingBox';
+import BoundingBox from './BoundingBox.js';
 import {geoMercator} from 'd3-geo';
 
 /**

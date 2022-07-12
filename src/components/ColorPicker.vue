@@ -3,14 +3,14 @@
 <div class='vue-colorpicker' @click='showPicker = true' v-click-outside='hide' >
   <span class='vue-colorpicker-btn' :style='btnStyle' ref='triggerButton'></span>
   <div class='vue-colorpicker-panel' v-show='showPicker' :style="{left: panelLeft, top: panelTop}">
-    <component :is='pickerType' v-model='colors' @input='changeColor'></component>
+    <component :is='pickerType' :modelValue='colors' @update:modelValue='changeColor'></component>
   </div>
 </div>
 </template>
 
 <script>
 import tinycolor from 'tinycolor2'
-import { Sketch } from 'vue-color'
+import Sketch from './vue3-color/Sketch.vue'
 import ClickOutside from './clickOutside.js'
 
 export default {
@@ -20,10 +20,11 @@ export default {
   },
   directives: { ClickOutside },
   props: {
-    value: {
+    modelValue: {
       type: Object,
     },
   },
+  emits: ['update:modelValue', 'change'],
   data () {
     return {
       showPicker: false,
@@ -59,7 +60,7 @@ export default {
     },
   },
   watch: {
-    value (val, oldVal) {
+    modelValue(val, oldVal) {
       if (val !== oldVal) {
         this.updateColorObject(val);
       }
@@ -90,8 +91,8 @@ export default {
     },
     changeColor (data) {
       this.colorValue = data.rgba;
-      this.$emit('input', this.colorValue)
-      this.$emit('change', this.colorValue)
+      this.$emit('update:modelValue', this.colorValue);
+      this.$emit('change', this.colorValue);
     },
     updateColorObject (color) {
       if (!color) return
@@ -117,7 +118,7 @@ export default {
     }
   },
   mounted () {
-    this.updateColorObject(this.value)
+    this.updateColorObject(this.modelValue);
   }
 }
 </script>
