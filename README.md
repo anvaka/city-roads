@@ -21,7 +21,7 @@ and fallback to overpass if area is not present in cache.
 
 Behind simple UI software engineers would also find scripting capabilities. You can develop programs on top
 of the city-roads. A few examples are available in [city-script](https://github.com/anvaka/city-script). Scene
-API is documented here: https://github.com/anvaka/city-roads/blob/master/API.md
+API is documented here: https://github.com/anvaka/city-roads/blob/main/API.md
 
 Please share your creations and do not hesitate to reach out if you have any questions.
 
