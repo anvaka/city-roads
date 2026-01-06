@@ -1,6 +1,6 @@
 # city-roads
 
-Render every single road in any city at once: https://anvaka.github.io/city-roads/
+Render every single road in any city at once: https://city-roads-seven.vercel.app/
 
 ![demo](https://i.imgur.com/6bFhX3e.png)
 
@@ -40,7 +40,6 @@ Luckily, most of the cities can be rendered without problems, resulting in a bea
 
 If you like this work and want to use it in your projects - you are more than welcome to do so!
 
-Please [let me](https://twitter.com/anvaka) know how it goes. You can also sponsor my projects [here](https://github.com/sponsors/anvaka) - your funds will be dedicated to more awesome and free data visualizations.
 
 ## Local development
 
