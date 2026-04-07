@@ -12,8 +12,10 @@ import Query from './lib/Query.js';
 window.addEventListener('error', logError);
 
 // expose the console API
-window.requireModule = d3Require;
-window.Query = Query;
+if (process.env.NODE_ENV !== 'production') {
+  window.requireModule = d3Require;
+  window.Query = Query;
+}
 
 if (isWebGLEnabled(document.querySelector('#canvas'))) {
   createApp(App).mount('#host');
