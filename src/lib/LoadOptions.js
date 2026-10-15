@@ -88,7 +88,9 @@ out ${this.outputMethod};`;
 
         return {
           bounds,
-          queryString
+          queryString,
+          // Allow time for server queueing and downloading after execution.
+          requestTimeout: (this.timeout + 60) * 1000
         }
       });
   }
