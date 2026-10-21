@@ -159,8 +159,14 @@ export default {
             }, 50)
           } else {
               this.suggestionsLoaded = true;
-              this.suggestions = suggestions; 
+              this.suggestions = suggestions;
           }
+        })
+        .catch(err => {
+          // Without this the "Searching..." message stays forever when nominatim fails.
+          this.loading = null;
+          this.lastSuggestion = null; // so that "Retry" repeats the search
+          this.error = typeof err === 'string' ? new Error(err) : err;
         });
     },
 
@@ -202,6 +208,8 @@ export default {
     retry() {
       if (this.lastSuggestion) {
         this.pickSuggestion(this.lastSuggestion);
+      } else {
+        this.onSubmit();
       }
     },
 
