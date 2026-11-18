@@ -35,7 +35,7 @@ export default class LoadOptions {
 
     if (rawOptions.projector) {
       // user defined projection. See https://github.com/d3/d3-geo for the projector reference:
-      result.projector = projector;
+      result.projector = rawOptions.projector;
     }
 
     return result;
