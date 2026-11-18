@@ -38,6 +38,7 @@ export default class Query {
   constructor(boundedQuery, progress) {
     this.queryBounds = boundedQuery.bounds;
     this.queryString = boundedQuery.queryString;
+    this.requestTimeout = boundedQuery.requestTimeout;
     this.progress = progress;
     this.promise = null;
   }
@@ -49,7 +50,7 @@ export default class Query {
     let parts = collectAllNominatimQueries(this.queryString);
 
     this.promise = runAllNominmantimQueries(parts)
-      .then(resolvedQueryString => postData(resolvedQueryString, this.progress))
+      .then(resolvedQueryString => postData(resolvedQueryString, this.progress, this.requestTimeout))
       .then(osmResponse => {
         if (!osmResponse || !osmResponse.elements) {
           let err = new Error('OpenStreetMap servers returned an invalid response. Please try again.');

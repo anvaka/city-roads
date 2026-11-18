@@ -3,17 +3,16 @@ import Progress from './Progress.js';
 
 let backends = [
   'https://overpass-api.de/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
   'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
-  'https://overpass.osm.jp/api/interpreter',
-  'https://overpass.kumi.systems/api/interpreter',
-  'https://overpass.openstreetmap.ru/cgi/interpreter'
 ]
 
-export default function postData(data, progress) {
+export default function postData(data, progress, timeout) {
   progress = progress || new Progress();
   const postData = {
     method: 'POST',
     responseType: 'json',
+    timeout,
     progress,
     headers: {
       'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
@@ -40,11 +39,9 @@ export default function postData(data, progress) {
       throw err;
     }
 
-    if (err.statusError) {
-      progress.notify({
-        loaded: -1
-      });
-    }
+    progress.notify({
+      loaded: -1
+    });
 
     serverIndex += 1;
     return fetchFrom(backends[serverIndex])
