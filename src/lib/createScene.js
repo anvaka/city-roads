@@ -124,6 +124,16 @@ export default function createScene(canvas) {
     add,
 
     /**
+     * Removes a grid layer from the scene.
+     */
+    remove,
+
+    /**
+     * Moves the camera so that every visible layer fits on the screen.
+     */
+    fitAll,
+
+    /**
      * Executes an OverPass query and loads results into scene.
      */
     load,
@@ -186,6 +196,33 @@ export default function createScene(canvas) {
         scene.setViewBox(viewBox);
       }
     }
+  }
+
+  function remove(gridLayer) {
+    let index = layers.indexOf(gridLayer);
+    if (index < 0) return;
+
+    layers.splice(index, 1);
+    gridLayer.destroy();
+    scene.renderFrame();
+  }
+
+  function fitAll(padding = 0.05) {
+    let left = Infinity, right = -Infinity, top = -Infinity, bottom = Infinity;
+    layers.forEach(layer => {
+      if (!layer.grid || layer.hidden) return;
+      let rect = layer.grid.getProjectedRect();
+      left = Math.min(left, rect.left, rect.right);
+      right = Math.max(right, rect.left, rect.right);
+      top = Math.max(top, rect.top, rect.bottom);
+      bottom = Math.min(bottom, rect.top, rect.bottom);
+    });
+    if (!Number.isFinite(left)) return;
+
+    let dx = (right - left) * padding;
+    let dy = (top - bottom) * padding;
+    scene.setViewBox({left: left - dx, right: right + dx, top: top + dy, bottom: bottom - dy});
+    scene.renderFrame();
   }
 
   function saveToPNG(name) {

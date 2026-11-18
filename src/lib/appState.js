@@ -27,5 +27,6 @@ export default {
     queryState.unset('areaId');
     queryState.unset('osm_id');
     queryState.unset('bbox');
+    queryState.unset('with'); // extra places stitched to the map
   }
 }

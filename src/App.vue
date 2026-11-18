@@ -4,8 +4,11 @@
     <div v-if='placeFound'>
       <div class='controls'>
         <a href="#" class='print-button' @click.prevent='toggleSettings'>Customize...</a>
+        <a href="#" class='add-place-button' @click.prevent='toggleAddPlace'>Add place</a>
         <a href="#" class='try-another' @click.prevent='startOver'>Try another city</a>
       </div>
+      <add-place v-show='showAddPlace' :places='places' :load-place='addPlace' :current-bbox='currentBbox'
+        :restore-ids='restoreIds' @remove='removePlace'></add-place>
       <div v-if='showSettings' class='print-window'>
         <h3>Display</h3>
         <div class='row'>
@@ -76,6 +79,7 @@
 
 <script>
 import FindPlace from './components/FindPlace.vue';
+import AddPlace from './components/AddPlace.vue';
 import LoadingIcon from './components/LoadingIcon.vue';
 import EditableLabel from './components/EditableLabel.vue';
 import ColorPicker from './components/ColorPicker.vue';
@@ -89,6 +93,8 @@ import './lib/canvas2BlobPolyfill.js';
 import bus from './lib/bus.js';
 import createOverlayManager from './createOverlayManager.js';
 import tinycolor from 'tinycolor2';
+import Query from './lib/Query.js';
+import LoadOptions from './lib/LoadOptions.js';
 
 class ColorLayer {
   constructor(name, color, callback) {
@@ -102,6 +108,7 @@ export default {
   name: 'App',
   components: {
     FindPlace,
+    AddPlace,
     LoadingIcon,
     EditableLabel,
     ColorPicker
@@ -113,6 +120,10 @@ export default {
       zazzleLink: null,
       generatingPreview: false,
       showSettings: false,
+      showAddPlace: false,
+      // Places stitched together on this map: [{name, areaId, bbox}]. The first one is the place we started with.
+      places: [],
+      restoreIds: [],
       settingsOpen: false,
       labelColor: config.getLabelColor().toRgb(),
       backgroundColor: config.getBackgroundColor().toRgb(),
@@ -122,6 +133,14 @@ export default {
   computed: {
     labelColorRGBA() {
       return toRGBA(this.labelColor);
+    },
+    currentBbox() {
+      // [south, west, north, east] around all places on the map
+      let boxes = this.places.map(p => p.bbox).filter(Boolean);
+      if (!boxes.length) return null;
+      return boxes.reduce((a, b) => [
+        Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[2], b[2]), Math.max(a[3], b[3])
+      ]);
     }
   },
   created() {
@@ -129,6 +148,8 @@ export default {
     bus.on('background-color', this.syncBackground);
     bus.on('line-color', this.syncLineColor);
     this.overlayManager = createOverlayManager();
+    // areaId -> GridLayer. Kept outside of reactive data, so that w-gl gets the original objects.
+    this.placeLayers = new Map();
   },
   beforeUnmount() {
     debugger;
@@ -147,6 +168,11 @@ export default {
     },
     toggleSettings() {
       this.showSettings = !this.showSettings;
+      if (this.showSettings) this.showAddPlace = false;
+    },
+    toggleAddPlace() {
+      this.showAddPlace = !this.showAddPlace;
+      if (this.showAddPlace) this.showSettings = false;
     },
     handleSceneTransform() {
       this.zazzleLink = null;
@@ -176,18 +202,84 @@ export default {
       gridLayer.id = 'lines';
       gridLayer.setGrid(grid);
       this.scene.add(gridLayer)
+
+      let areaId = grid.isArea ? grid.id : null;
+      this.places = [{name: this.name, areaId, bbox: getGridBbox(grid)}];
+      this.placeLayers.clear();
+      if (areaId) this.placeLayers.set(String(areaId), gridLayer);
+
+      let restoreIds = areaId ? parseAreaIds(appState.get('with')) : [];
+      if (restoreIds.length) this.showAddPlace = true;
+      this.restoreIds = restoreIds;
+    },
+
+    /**
+     * Downloads roads of a neighbouring place and stitches them into the current map.
+     */
+    addPlace(suggestion, progress) {
+      let scene = this.scene;
+      let name = suggestion.name.split(',')[0];
+
+      return Query.runFromOptions(new LoadOptions({
+        wayFilter: Query.Road,
+        areaId: suggestion.areaId
+      }), progress).then(grid => {
+        if (progress.isCancelled || scene !== this.scene) return;
+        if (!grid.hasRoads()) throw new Error(`Didn't find any roads in ${name}`);
+
+        // Same projection as the first place, so that the roads line up at the border.
+        let firstLayer = scene.queryLayer();
+        grid.setProjector(firstLayer.getGridProjector());
+        grid.setName(name);
+        grid.setId(suggestion.areaId);
+
+        let layer = new GridLayer();
+        layer.id = name;
+        layer.color = firstLayer.color;
+        layer.lineWidth = firstLayer.lineWidth;
+        layer.setGrid(grid);
+        scene.add(layer);
+
+        this.placeLayers.set(String(suggestion.areaId), layer);
+        this.places.push({name, areaId: suggestion.areaId, bbox: suggestion.bbox || getGridBbox(grid)});
+        this.onPlacesChanged();
+      });
+    },
+
+    removePlace(place) {
+      let key = String(place.areaId);
+      let layer = this.placeLayers.get(key);
+      if (layer) this.scene.remove(layer);
+      this.placeLayers.delete(key);
+      this.places = this.places.filter(p => p !== place);
+      this.onPlacesChanged();
+    },
+
+    onPlacesChanged() {
+      let extraIds = this.places.slice(1).map(p => p.areaId);
+      if (extraIds.length) appState.set('with', extraIds.join(','));
+      else appState.unset('with');
+
+      this.name = joinNames(this.places.map(p => p.name));
+      this.scene.fitAll();
+      this.updateLayers();
     },
 
     startOver() {
       appState.unset('areaId');
       appState.unsetPlace();
       appState.unset('q');
+      appState.unset('with');
       appState.enableCache();
 
       this.dispose();
       this.placeFound = false;
       this.zazzleLink = null;
       this.showSettings = false;
+      this.showAddPlace = false;
+      this.places = [];
+      this.restoreIds = [];
+      this.placeLayers.clear();
       this.backgroundColor = config.getBackgroundColor().toRgb();
       this.labelColor = config.getLabelColor().toRgb();
 
@@ -284,6 +376,22 @@ function toRGBA(c) {
     return `rgba(${c.r}, ${c.g}, ${c.b}, ${c.a})`;
 }
 
+function joinNames(names) {
+  if (names.length < 2) return names[0] || '';
+  return names.slice(0, -1).join(', ') + ' & ' + names[names.length - 1];
+}
+
+function parseAreaIds(str) {
+  if (!str) return [];
+  return String(str).split(',').filter(id => Number.isFinite(Number.parseInt(id, 10)));
+}
+
+function getGridBbox(grid) {
+  let b = grid.bounds;
+  if (!Number.isFinite(b.minX)) return null;
+  return [b.minY, b.minX, b.maxY, b.maxX];
+}
+
 function recordOpenClick(link) {
   if (typeof gtag === 'undefined') return;
 
@@ -352,6 +460,11 @@ function recordOpenClick(link) {
   }
   a.try-another {
     flex: 1;
+  }
+
+  a.add-place-button {
+    flex: 1;
+    border-right: 1px solid border-color;
   }
 
   a.print-button {

@@ -17,6 +17,14 @@ The name resolution is done by [nominatim](https://nominatim.openstreetmap.org/)
 into the search box it returns list of area ids. I check for the area id in my list of cached cities first,
 and fallback to overpass if area is not present in cache.
 
+## Stitching neighbouring places
+
+A boundary often covers only part of what you think of as one town. After a place has loaded,
+use **Add place** to search for a neighbouring village or city and add its roads to the same map.
+All places use the projection of the first one, so the roads connect at the border, and the
+exported PNG/SVG contains everything on screen. The places are kept in the url, so a link
+restores the whole map.
+
 ## Scripting
 
 Behind simple UI software engineers would also find scripting capabilities. You can develop programs on top

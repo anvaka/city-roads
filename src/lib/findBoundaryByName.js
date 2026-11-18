@@ -15,6 +15,20 @@ export default function findBoundaryByName(inputName) {
       });
 }
 
+/**
+ * Looks up a single boundary by its overpass area id (used to restore places from the url).
+ */
+export function findBoundaryByAreaId(areaId) {
+  areaId = Number(areaId);
+  let osmId = areaId >= 36e8 ? 'R' + (areaId - 36e8) : 'W' + (areaId - 24e8);
+  return request(`https://nominatim.openstreetmap.org/lookup?format=json&osm_ids=${osmId}`, {responseType: 'json'})
+    .then(extractBoundaries)
+    .then(x => {
+      if (!x.length) throw new Error('Could not find a place with area id ' + areaId);
+      return x[0];
+    });
+}
+
 function extractBoundaries(x) {
   let areas = x.map(row => {
       let areaId, bbox;

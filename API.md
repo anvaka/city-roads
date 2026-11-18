@@ -73,6 +73,21 @@ allLayers[1].color = 'rgb(255, 12, 43)'; // or a any other expression (rgb, hex,
 
 Clears the current scene, allowing you to start from scratch.
 
+### `scene.remove(layer)`
+
+Removes one layer (for example a place added with `scene.load()`) from the scene.
+
+### `scene.fitAll()`
+
+Moves the camera so that all visible layers fit on the screen:
+
+``` js
+// Load a neighbouring area with the same projection, so that roads line up:
+scene.load(Query.Road, {layer: scene.queryLayer(), areaId: 3601883608});
+// ...once it has loaded:
+scene.fitAll();
+```
+
 
 ### `scene.saveToPNG(fileName: string)`
 
