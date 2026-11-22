@@ -42,6 +42,8 @@ If you like this work and want to use it in your projects - you are more than we
 
 Please [let me](https://twitter.com/anvaka) know how it goes. You can also sponsor my projects [here](https://github.com/sponsors/anvaka) - your funds will be dedicated to more awesome and free data visualizations.
 
+See my other projects at [anvaka.com](https://anvaka.com).
+
 ## Local development
 
 ``` bash

@@ -65,6 +65,9 @@
            If you love this website you can also <a href='https://www.paypal.com/paypalme2/anvakos/3'>buy me a coffee</a> or 
            <a href='https://www.patreon.com/anvaka'>support me on Patreon</a>, but you don't have to.
           </p>
+          <p>
+           See my other projects at <a href='https://anvaka.com'>anvaka.com</a>.
+          </p>
         </div>
       </div>
     </div>
