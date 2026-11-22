@@ -1,4 +1,6 @@
 #!/bin/sh
+# Stop at the first error, so that a failed build is never pushed.
+set -e
 rm -rf ./dist
 npm run build
 cd ./dist
