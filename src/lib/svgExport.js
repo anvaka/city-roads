@@ -18,9 +18,9 @@ Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright
       let pathLength = 0;
       for (let i = 1; i < path.length; ++i) {
         pathLength += Math.hypot(path[i].x - path[i - 1].x, path[i].y - path[i - 1].y);
-        if (pathLength > options.minLength) return true;
+        if (pathLength >= options.minLength) return true;
       }
-      return pathLength > options.minLength;
+      return pathLength >= options.minLength;
     }
   }
   svgExportSettings.round = options.round;
