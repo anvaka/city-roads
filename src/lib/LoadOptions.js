@@ -52,8 +52,10 @@ export default class LoadOptions {
     */
     this.projector = undefined;
     this.wayFilter = undefined;
-    this.timeout = 900;
-    this.maxHeapByteSize = 1073741824;
+    // Large reservations make public servers reject even small city queries.
+    // Callers can still override these limits for unusually large areas.
+    this.timeout = 60;
+    this.maxHeapByteSize = 268435456;
     this.outputMethod = 'skel'; // body
     Object.assign(this, overrides);
   }
